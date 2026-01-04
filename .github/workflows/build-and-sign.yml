@@ -53,7 +53,7 @@ jobs:
           organization-id: '${{ secrets.SIGNPATH_ORGANIZATION_ID }}'
           project-slug: 'viet-ime'
           signing-policy-slug: 'release-signing'
-          artifact-configuration-slug: 'exe'
+          artifact-configuration-slug: 'initial-version'
           github-artifact-id: 'VietIME-unsigned'
           wait-for-completion: true
           output-artifact-directory: './signed'
