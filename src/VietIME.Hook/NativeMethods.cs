@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace VietIME.Hook;
@@ -28,6 +29,7 @@ public static class NativeMethods
     public const int VK_SPACE = 0x20;
     public const int VK_TAB = 0x09;
     public const int VK_ESCAPE = 0x1B;
+    public const int VK_V = 0x56;
     
     // Phím di chuyển con trỏ
     public const uint VK_LEFT = 0x25;
@@ -272,6 +274,28 @@ public static class NativeMethods
     
     #region Helper Methods
     
+    /// <summary>
+    /// Lấy tên process của foreground window
+    /// </summary>
+    public static string? GetForegroundProcessName()
+    {
+        try
+        {
+            var hWnd = GetForegroundWindow();
+            if (hWnd == IntPtr.Zero) return null;
+
+            GetWindowThreadProcessId(hWnd, out uint processId);
+            if (processId == 0) return null;
+
+            using var process = Process.GetProcessById((int)processId);
+            return process.ProcessName?.ToLowerInvariant();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
     /// <summary>
     /// Kiểm tra phím có đang được nhấn không
     /// </summary>
