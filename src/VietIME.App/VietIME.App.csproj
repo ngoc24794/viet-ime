@@ -14,9 +14,11 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>VietIME</AssemblyName>
     <Version>1.0.0</Version>
-    <Company>VietIME</Company>
-    <Product>VietIME - Bộ gõ tiếng Việt</Product>
-    <Description>Bộ gõ tiếng Việt cho Windows - Thay thế Unikey</Description>
+    <Company>Do Nam</Company>
+    <Authors>Do Nam</Authors>
+    <Copyright>Copyright (c) 2024-2026 Do Nam. All rights reserved.</Copyright>
+    <Product>VietIME - Bo go tieng Viet</Product>
+    <Description>Bo go tieng Viet cho Windows</Description>
     
     <!-- Icon -->
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
