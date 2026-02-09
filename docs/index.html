@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VietIME — Bộ gõ Tiếng Việt cho Windows</title>
+    <meta name="description" content="VietIME - Bộ gõ tiếng Việt miễn phí, thay thế Unikey. Hỗ trợ Telex & VNI, hoạt động trên mọi ứng dụng Windows 10/11 kể cả Terminal và PowerShell.">
+    <meta name="author" content="Đỗ Nam">
+    <meta name="keywords" content="VietIME, bộ gõ tiếng Việt, Vietnamese input, Telex, VNI, Windows, Unikey alternative, terminal typing">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect rx='20' width='100' height='100' fill='%2314141c'/><text x='50' y='68' font-size='60' font-weight='bold' fill='%23d72828' text-anchor='middle' font-family='system-ui'>V</text></svg>">
+
+    <!-- Open Graph -->
+    <meta property="og:title" content="VietIME — Bộ gõ Tiếng Việt cho Windows">
+    <meta property="og:description" content="Bộ gõ tiếng Việt miễn phí, thay thế Unikey. Hỗ trợ Telex & VNI, hoạt động trên Terminal/PowerShell.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://vietime.donam.vn">
+
+    <style>
+        :root {
+            --bg: #0b0b0f;
+            --bg-card: #14141c;
+            --bg-card-hover: #1a1a26;
+            --text: #e4e4ef;
+            --text-dim: #8888a0;
+            --accent: #d72828;
+            --accent-glow: rgba(215, 40, 40, 0.15);
+            --border: #2a2a3a;
+            --green: #22c55e;
+            --blue: #3b82f6;
+            --purple: #a855f7;
+            --orange: #f59e0b;
+            --radius: 12px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Glow background */
+        .glow-bg {
+            position: fixed;
+            top: -200px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 600px;
+            height: 400px;
+            background: radial-gradient(ellipse, var(--accent-glow), transparent 70%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Nav */
+        nav {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-decoration: none;
+            color: var(--text);
+        }
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            color: var(--accent);
+            font-size: 1.1rem;
+        }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a {
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+        .nav-links a:hover { color: var(--text); }
+
+        /* Hero */
+        .hero {
+            text-align: center;
+            padding: 80px 0 60px;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 6px 16px;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+        }
+        .hero-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--green);
+            border-radius: 50%;
+        }
+        .hero h1 {
+            font-size: clamp(2.2rem, 5vw, 3.2rem);
+            font-weight: 800;
+            line-height: 1.15;
+            margin-bottom: 16px;
+        }
+        .hero h1 .accent { color: var(--accent); }
+        .hero p {
+            font-size: 1.1rem;
+            color: var(--text-dim);
+            max-width: 560px;
+            margin: 0 auto 32px;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary:hover {
+            background: #e03030;
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px var(--accent-glow);
+        }
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-secondary:hover {
+            background: var(--bg-card-hover);
+            border-color: #444;
+        }
+
+        /* Stats */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            padding: 40px 0;
+            margin-bottom: 20px;
+        }
+        .stat { text-align: center; }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--text);
+        }
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-top: 2px;
+        }
+
+        /* Sections */
+        section { padding: 50px 0; }
+        .section-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .section-subtitle {
+            color: var(--text-dim);
+            margin-bottom: 40px;
+            font-size: 1rem;
+        }
+
+        /* Feature grid */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 16px;
+        }
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 24px;
+            transition: all 0.2s;
+        }
+        .feature-card:hover {
+            border-color: #444;
+            background: var(--bg-card-hover);
+            transform: translateY(-2px);
+        }
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            margin-bottom: 14px;
+        }
+        .feature-card h3 {
+            font-size: 1.05rem;
+            margin-bottom: 6px;
+        }
+        .feature-card p {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+            line-height: 1.5;
+        }
+
+        /* Typing table */
+        .typing-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        .typing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+        }
+        .typing-card h3 {
+            font-size: 1.15rem;
+            margin-bottom: 4px;
+        }
+        .typing-card .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 16px;
+        }
+        .typing-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .typing-table th,
+        .typing-table td {
+            text-align: left;
+            padding: 8px 12px;
+            font-size: 0.88rem;
+            border-bottom: 1px solid var(--border);
+        }
+        .typing-table th {
+            color: var(--text-dim);
+            font-weight: 600;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .typing-table td:first-child {
+            font-family: 'Consolas', 'Cascadia Code', monospace;
+            color: var(--accent);
+            font-weight: 600;
+        }
+        .typing-table td:nth-child(2) {
+            font-weight: 600;
+        }
+
+        /* Hotkeys */
+        .hotkey-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 16px;
+        }
+        .hotkey-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        .hotkey-keys {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+        }
+        .key {
+            background: #1e1e2e;
+            border: 1px solid #3a3a4a;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            font-family: 'Consolas', monospace;
+            color: var(--text);
+            white-space: nowrap;
+        }
+        .key-plus {
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            font-size: 0.8rem;
+        }
+        .hotkey-desc {
+            font-size: 0.88rem;
+            color: var(--text-dim);
+        }
+
+        /* Compat */
+        .compat-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .compat-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.9rem;
+        }
+        .compat-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        /* Install */
+        .install-steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .install-step {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px 24px;
+            text-align: center;
+        }
+        .step-num {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--accent-glow);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            margin-bottom: 14px;
+        }
+        .install-step h3 {
+            font-size: 1rem;
+            margin-bottom: 6px;
+        }
+        .install-step p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Tech */
+        .tech-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .tech-pill {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 8px 18px;
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 40px 0;
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .typing-section { grid-template-columns: 1fr; }
+            .install-steps { grid-template-columns: 1fr; }
+            .stats { gap: 28px; }
+            .stat-value { font-size: 1.4rem; }
+            .hero { padding: 50px 0 40px; }
+            nav { flex-direction: column; gap: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-bg"></div>
+
+    <div class="container">
+        <!-- Nav -->
+        <nav>
+            <a href="#" class="logo">
+                <div class="logo-icon">V</div>
+                VietIME
+            </a>
+            <div class="nav-links">
+                <a href="#features">Tính năng</a>
+                <a href="#typing">Cách gõ</a>
+                <a href="#install">Cài đặt</a>
+                <a href="https://github.com/donamvn/viet-ime/releases" class="btn btn-secondary" style="padding: 8px 16px; font-size: 0.85rem;">
+                    Tải xuống
+                </a>
+            </div>
+        </nav>
+
+        <!-- Hero -->
+        <section class="hero">
+            <div class="hero-badge">
+                <span class="dot"></span>
+                Phiên bản 1.0 · Windows 10/11
+            </div>
+            <h1>
+                Gõ tiếng Việt<br>
+                <span class="accent">mọi nơi trên Windows</span>
+            </h1>
+            <p>
+                Bộ gõ tiếng Việt miễn phí, nhẹ, hoạt động trên <strong>tất cả ứng dụng</strong> —
+                kể cả Terminal, PowerShell và IDE nơi Unikey thường gặp lỗi.
+            </p>
+            <div class="hero-actions">
+                <a href="https://github.com/donamvn/viet-ime/releases" class="btn btn-primary">
+                    ⬇ Tải VietIME.exe
+                </a>
+                <a href="https://github.com/donamvn/viet-ime" class="btn btn-secondary">
+                    GitHub
+                </a>
+            </div>
+        </section>
+
+        <!-- Stats -->
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">~68 MB</div>
+                <div class="stat-label">Portable EXE</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Cài đặt thêm</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">2</div>
+                <div class="stat-label">Kiểu gõ</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">MIT</div>
+                <div class="stat-label">License</div>
+            </div>
+        </div>
+
+        <!-- Features -->
+        <section id="features">
+            <h2 class="section-title">Tính năng</h2>
+            <p class="section-subtitle">Mọi thứ bạn cần để gõ tiếng Việt trên Windows.</p>
+
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(34,197,94,0.1); color: var(--green);">🌐</div>
+                    <h3>Hoạt động System-wide</h3>
+                    <p>Gõ tiếng Việt trên mọi ứng dụng Windows — Office, trình duyệt, Notepad, Explorer, và tất cả app Win32/UWP.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(59,130,246,0.1); color: var(--blue);">⌨️</div>
+                    <h3>Hỗ trợ Terminal & IDE</h3>
+                    <p>Hoạt động hoàn hảo trên Terminal, PowerShell, Warp, VS Code Terminal — nơi Unikey/EVKey thường gặp lỗi.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(168,85,247,0.1); color: var(--purple);">🔤</div>
+                    <h3>Telex & VNI</h3>
+                    <p>Hỗ trợ đầy đủ 2 kiểu gõ phổ biến nhất. Chuyển đổi nhanh qua system tray hoặc cửa sổ cài đặt.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(245,158,11,0.1); color: var(--orange);">🧠</div>
+                    <h3>Nhận diện từ tiếng Anh</h3>
+                    <p>Tự động phát hiện từ không phải tiếng Việt (windows, download...) và bỏ qua xử lý dấu — giảm lỗi khi gõ lẫn.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(215,40,40,0.1); color: var(--accent);">⚡</div>
+                    <h3>Portable — Không cần cài</h3>
+                    <p>Tải 1 file EXE, chạy trực tiếp. Không cần cài .NET, không cần quyền admin, không sửa registry.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(34,197,94,0.1); color: var(--green);">🔄</div>
+                    <h3>Tự tắt khi có Unikey</h3>
+                    <p>Phát hiện Unikey đang bật (Vietnamese keyboard layout) thì tự tắt để tránh xung đột. Dùng song song không lo.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(59,130,246,0.1); color: var(--blue);">🎨</div>
+                    <h3>System Tray & Dark UI</h3>
+                    <p>Icon tray thay đổi theo trạng thái bật/tắt. Menu context dark theme đẹp mắt. Cửa sổ cài đặt gọn gàng.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(168,85,247,0.1); color: var(--purple);">📐</div>
+                    <h3>Đặt dấu đúng chuẩn</h3>
+                    <p>Xử lý đúng quy tắc đặt dấu tiếng Việt: ươ, oa, oe, qu, gi — kể cả các trường hợp phức tạp.</p>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon" style="background: rgba(245,158,11,0.1); color: var(--orange);">🛡️</div>
+                    <h3>An toàn & Mã nguồn mở</h3>
+                    <p>Không thu thập dữ liệu, không kết nối internet. Mã nguồn mở trên GitHub, MIT License.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typing Guide -->
+        <section id="typing">
+            <h2 class="section-title">Cách gõ</h2>
+            <p class="section-subtitle">Hỗ trợ 2 kiểu gõ phổ biến nhất tại Việt Nam.</p>
+
+            <div class="typing-section">
+                <div class="typing-card">
+                    <h3>Telex</h3>
+                    <p class="subtitle">Kiểu gõ mặc định — phổ biến nhất</p>
+                    <table class="typing-table">
+                        <thead>
+                            <tr><th>Gõ</th><th>Kết quả</th><th>Mô tả</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>aa</td><td>â</td><td>a mũ</td></tr>
+                            <tr><td>aw</td><td>ă</td><td>a móc</td></tr>
+                            <tr><td>ee</td><td>ê</td><td>e mũ</td></tr>
+                            <tr><td>oo</td><td>ô</td><td>o mũ</td></tr>
+                            <tr><td>ow / ]</td><td>ơ</td><td>o móc</td></tr>
+                            <tr><td>uw / [</td><td>ư</td><td>u móc</td></tr>
+                            <tr><td>dd</td><td>đ</td><td>d ngang</td></tr>
+                            <tr><td>s f r x j</td><td>dấu</td><td>sắc huyền hỏi ngã nặng</td></tr>
+                            <tr><td>z</td><td>xóa dấu</td><td>xóa tất cả dấu/mũ</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 14px; font-size: 0.82rem; color: var(--text-dim);">
+                        Ví dụ: <code style="color: var(--accent);">Vieejt Nam</code> → <strong>Việt Nam</strong>
+                    </p>
+                </div>
+
+                <div class="typing-card">
+                    <h3>VNI</h3>
+                    <p class="subtitle">Kiểu gõ dùng phím số</p>
+                    <table class="typing-table">
+                        <thead>
+                            <tr><th>Gõ</th><th>Kết quả</th><th>Mô tả</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>6</td><td>â / ê / ô</td><td>mũ</td></tr>
+                            <tr><td>7</td><td>ă / ư</td><td>móc / breve</td></tr>
+                            <tr><td>8</td><td>ơ</td><td>o móc</td></tr>
+                            <tr><td>9</td><td>đ</td><td>d ngang</td></tr>
+                            <tr><td>1</td><td>sắc</td><td>dấu sắc</td></tr>
+                            <tr><td>2</td><td>huyền</td><td>dấu huyền</td></tr>
+                            <tr><td>3</td><td>hỏi</td><td>dấu hỏi</td></tr>
+                            <tr><td>4</td><td>ngã</td><td>dấu ngã</td></tr>
+                            <tr><td>5</td><td>nặng</td><td>dấu nặng</td></tr>
+                        </tbody>
+                    </table>
+                    <p style="margin-top: 14px; font-size: 0.82rem; color: var(--text-dim);">
+                        Ví dụ: <code style="color: var(--accent);">Vie6t1 Nam</code> → <strong>Việt Nam</strong>
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Hotkeys -->
+        <section id="hotkeys">
+            <h2 class="section-title">Phím tắt</h2>
+            <p class="section-subtitle">Điều khiển nhanh bằng bàn phím.</p>
+
+            <div class="hotkey-grid">
+                <div class="hotkey-card">
+                    <div class="hotkey-keys">
+                        <span class="key">Ctrl</span>
+                        <span class="key-plus">+</span>
+                        <span class="key">`</span>
+                    </div>
+                    <div class="hotkey-desc">Bật / tắt VietIME</div>
+                </div>
+                <div class="hotkey-card">
+                    <div class="hotkey-keys">
+                        <span class="key">Ctrl</span>
+                        <span class="key-plus">+</span>
+                        <span class="key">Shift</span>
+                    </div>
+                    <div class="hotkey-desc">Tắt VietIME (khi dùng cùng Unikey)</div>
+                </div>
+                <div class="hotkey-card">
+                    <div class="hotkey-keys">
+                        <span class="key">Double-click</span>
+                    </div>
+                    <div class="hotkey-desc">Click đúp tray icon để bật/tắt</div>
+                </div>
+                <div class="hotkey-card">
+                    <div class="hotkey-keys">
+                        <span class="key">Right-click</span>
+                    </div>
+                    <div class="hotkey-desc">Menu tray: đổi engine, cài đặt, thoát</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Compatibility -->
+        <section>
+            <h2 class="section-title">Tương thích</h2>
+            <p class="section-subtitle">Hoạt động trên mọi ứng dụng Windows — kể cả những nơi Unikey không hoạt động.</p>
+
+            <div class="compat-grid">
+                <div class="compat-item"><span class="compat-icon">📝</span> Microsoft Office</div>
+                <div class="compat-item"><span class="compat-icon">🌐</span> Chrome / Edge / Firefox</div>
+                <div class="compat-item"><span class="compat-icon">💻</span> VS Code / Visual Studio</div>
+                <div class="compat-item"><span class="compat-icon">🖥️</span> Terminal / PowerShell</div>
+                <div class="compat-item"><span class="compat-icon">🚀</span> Warp IDE</div>
+                <div class="compat-item"><span class="compat-icon">📓</span> Notepad / WordPad</div>
+                <div class="compat-item"><span class="compat-icon">📂</span> File Explorer</div>
+                <div class="compat-item"><span class="compat-icon">🎮</span> Mọi app Win32/UWP</div>
+            </div>
+        </section>
+
+        <!-- Install -->
+        <section id="install">
+            <h2 class="section-title">Cài đặt</h2>
+            <p class="section-subtitle">3 bước — không cần cài gì thêm.</p>
+
+            <div class="install-steps">
+                <div class="install-step">
+                    <div class="step-num">1</div>
+                    <h3>Tải xuống</h3>
+                    <p>Tải <strong>VietIME.exe</strong> từ trang Releases trên GitHub.</p>
+                </div>
+                <div class="install-step">
+                    <div class="step-num">2</div>
+                    <h3>Chạy trực tiếp</h3>
+                    <p>Double-click file EXE. Nếu SmartScreen cảnh báo: <em>More info → Run anyway</em>.</p>
+                </div>
+                <div class="install-step">
+                    <div class="step-num">3</div>
+                    <h3>Bắt đầu gõ</h3>
+                    <p>Icon <strong style="color:var(--accent);">V</strong> xuất hiện trên system tray. Gõ tiếng Việt ngay!</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tech Stack -->
+        <section style="text-align: center;">
+            <h2 class="section-title">Công nghệ</h2>
+            <p class="section-subtitle">Xây dựng với .NET 8 — hiện đại, nhẹ, nhanh.</p>
+
+            <div class="tech-pills">
+                <div class="tech-pill">.NET 8</div>
+                <div class="tech-pill">C#</div>
+                <div class="tech-pill">WPF</div>
+                <div class="tech-pill">Win32 API</div>
+                <div class="tech-pill">Low-level Keyboard Hook</div>
+                <div class="tech-pill">SendInput / Clipboard</div>
+                <div class="tech-pill">Self-contained EXE</div>
+                <div class="tech-pill">MIT License</div>
+            </div>
+        </section>
+
+        <!-- Yêu cầu hệ thống -->
+        <section style="text-align: center; padding-bottom: 80px;">
+            <h2 class="section-title">Yêu cầu</h2>
+            <p class="section-subtitle" style="margin-bottom: 20px;">
+                Windows 10/11 (64-bit). Không cần cài thêm .NET hay bất kỳ phần mềm nào.
+            </p>
+            <a href="https://github.com/donamvn/viet-ime/releases" class="btn btn-primary" style="font-size: 1rem; padding: 14px 32px;">
+                ⬇ Tải VietIME miễn phí
+            </a>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <p>
+                <strong>VietIME</strong> — Bộ gõ Tiếng Việt cho Windows ·
+                © 2026 <a href="https://donam.vn">Đỗ Nam</a> ·
+                <a href="https://github.com/donamvn/viet-ime">GitHub</a> ·
+                MIT License
+            </p>
+        </div>
+    </footer>
+</body>
+</html>
