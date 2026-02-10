@@ -184,18 +184,33 @@ install_linux() {
         ok "xclip đã có"
     fi
 
-    # 4. Kiểm tra quyền input
-    if [ -e /dev/input/event0 ]; then
-        if ! [ -r /dev/input/event0 ]; then
-            warn "Chưa có quyền đọc /dev/input"
-            if command -v usermod &> /dev/null; then
-                info "Thêm user vào group 'input'..."
-                sudo usermod -aG input "$USER" 2>/dev/null && ok "Đã thêm $USER vào group input" || warn "Không thể tự thêm. Chạy: sudo usermod -aG input \$USER"
-                warn "Cần logout rồi login lại để có hiệu lực!"
-            fi
-        else
-            ok "Quyền /dev/input OK"
-        fi
+    # 4. Kiểm tra quyền input + uinput
+    info "Cấu hình quyền input..."
+
+    # Thêm user vào group input
+    if ! groups "$USER" 2>/dev/null | grep -q '\binput\b'; then
+        info "Thêm user vào group 'input'..."
+        sudo usermod -aG input "$USER" 2>/dev/null && ok "Đã thêm $USER vào group input" || warn "Không thể tự thêm. Chạy: sudo usermod -aG input \$USER"
+        NEED_LOGOUT=true
+    else
+        ok "User đã trong group input"
+    fi
+
+    # Tạo udev rule cho /dev/uinput (mặc định chỉ root mới mở được)
+    local UINPUT_RULE="/etc/udev/rules.d/99-vietime-uinput.rules"
+    if [ ! -f "$UINPUT_RULE" ]; then
+        info "Tạo udev rule cho /dev/uinput..."
+        echo 'KERNEL=="uinput", GROUP="input", MODE="0660"' | sudo tee "$UINPUT_RULE" > /dev/null 2>&1
+        sudo udevadm control --reload-rules 2>/dev/null
+        sudo udevadm trigger 2>/dev/null
+        ok "Đã tạo udev rule cho /dev/uinput"
+        NEED_LOGOUT=true
+    else
+        ok "Udev rule /dev/uinput đã có"
+    fi
+
+    if [ "$NEED_LOGOUT" = true ]; then
+        warn "Cần logout rồi login lại để quyền có hiệu lực!"
     fi
 
     # 5. Tải và cài đặt icon
@@ -308,6 +323,7 @@ uninstall() {
             rm -f "$HOME/.local/share/icons/hicolor/256x256/apps/vietime.png"
             rm -f "$HOME/.config/systemd/user/vietime.service"
             systemctl --user disable vietime 2>/dev/null || true
+            sudo rm -f /etc/udev/rules.d/99-vietime-uinput.rules 2>/dev/null || true
             ok "Đã gỡ VietIME"
             ;;
     esac
