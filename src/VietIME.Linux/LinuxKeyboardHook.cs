@@ -78,55 +78,102 @@ public class LinuxKeyboardHook : IDisposable
 
     /// <summary>
     /// Tìm keyboard device trong /dev/input/event*.
+    /// Hỗ trợ cả máy thật và VM (VMware, VirtualBox, QEMU, UTM).
     /// </summary>
-    public static string? FindKeyboardDevice()
+    public static string? FindKeyboardDevice(Action<string>? log = null)
     {
-        for (int i = 0; i < 32; i++)
+        string? bestMatch = null;
+        string? fallbackMatch = null;
+        int openFailCount = 0;
+
+        for (int i = 0; i < 64; i++)
         {
             string path = $"/dev/input/event{i}";
             int fd = open(path, O_RDONLY | O_NONBLOCK);
-            if (fd < 0) continue;
+            if (fd < 0)
+            {
+                openFailCount++;
+                continue;
+            }
 
             try
             {
                 // Đọc tên device
+                string name = "";
                 byte[] nameBuf = new byte[256];
                 if (ioctl(fd, EVIOCGNAME(256), nameBuf) >= 0)
                 {
-                    string name = Encoding.UTF8.GetString(nameBuf).TrimEnd('\0').ToLower();
+                    name = Encoding.UTF8.GetString(nameBuf).TrimEnd('\0');
+                }
+                string nameLower = name.ToLower();
 
-                    // Bỏ qua virtual devices (do chính VietIME tạo)
-                    if (name.Contains("vietime")) continue;
-                    // Bỏ qua mouse, touchpad, etc.
-                    if (name.Contains("mouse") || name.Contains("touchpad") ||
-                        name.Contains("trackpad") || name.Contains("trackpoint")) continue;
+                log?.Invoke($"  {path}: \"{name}\"");
+
+                // Bỏ qua virtual devices (do chính VietIME tạo)
+                if (nameLower.Contains("vietime"))
+                {
+                    log?.Invoke($"    → Bỏ qua (VietIME virtual device)");
+                    continue;
+                }
+                // Bỏ qua mouse, touchpad, etc.
+                if (nameLower.Contains("mouse") || nameLower.Contains("touchpad") ||
+                    nameLower.Contains("trackpad") || nameLower.Contains("trackpoint") ||
+                    nameLower.Contains("finger"))
+                {
+                    log?.Invoke($"    → Bỏ qua (mouse/touchpad)");
+                    continue;
                 }
 
                 // Kiểm tra device có EV_KEY capability
-                byte[] evBits = new byte[4]; // EV_MAX/8 + 1
+                byte[] evBits = new byte[4];
                 if (ioctl(fd, EVIOCGBIT(0, evBits.Length), evBits) >= 0)
                 {
                     bool hasKey = (evBits[0] & (1 << EV_KEY)) != 0;
-                    if (!hasKey) continue;
+                    if (!hasKey)
+                    {
+                        log?.Invoke($"    → Bỏ qua (không có EV_KEY)");
+                        continue;
+                    }
                 }
 
-                // Kiểm tra có đủ letter keys (để phân biệt keyboard vs. media keys)
+                // Kiểm tra key capabilities
                 byte[] keyBits = new byte[(KEY_MAX / 8) + 1];
                 if (ioctl(fd, EVIOCGBIT(EV_KEY, keyBits.Length), keyBits) >= 0)
                 {
-                    // Kiểm tra có KEY_A đến KEY_Z
-                    bool hasLetters = true;
+                    // Đếm letter keys có sẵn
+                    int letterCount = 0;
                     for (ushort k = KEY_A; k <= KEY_Z; k++)
                     {
-                        if ((keyBits[k / 8] & (1 << (k % 8))) == 0)
-                        {
-                            hasLetters = false;
-                            break;
-                        }
+                        if ((keyBits[k / 8] & (1 << (k % 8))) != 0)
+                            letterCount++;
                     }
 
-                    if (hasLetters)
-                        return path;
+                    // Kiểm tra có Enter + Space (tín hiệu keyboard cơ bản)
+                    bool hasEnter = (keyBits[KEY_ENTER / 8] & (1 << (KEY_ENTER % 8))) != 0;
+                    bool hasSpace = (keyBits[KEY_SPACE / 8] & (1 << (KEY_SPACE % 8))) != 0;
+
+                    log?.Invoke($"    → Letters: {letterCount}/26, Enter: {hasEnter}, Space: {hasSpace}");
+
+                    // Best match: đủ 26 chữ cái
+                    if (letterCount == 26)
+                    {
+                        log?.Invoke($"    ✓ Keyboard match (full letters)");
+                        bestMatch ??= path;
+                    }
+                    // Fallback: có ít nhất 20 letters + Enter + Space
+                    // (VM keyboard có thể không report đủ 26)
+                    else if (letterCount >= 20 && hasEnter && hasSpace)
+                    {
+                        log?.Invoke($"    ✓ Keyboard fallback match (VM compatible)");
+                        fallbackMatch ??= path;
+                    }
+                    // Fallback 2: device tên chứa "keyboard" hoặc "kbd"
+                    else if ((nameLower.Contains("keyboard") || nameLower.Contains("kbd") ||
+                              nameLower.Contains("at translated")) && hasEnter)
+                    {
+                        log?.Invoke($"    ✓ Keyboard fallback match (by name)");
+                        fallbackMatch ??= path;
+                    }
                 }
             }
             finally
@@ -135,7 +182,19 @@ public class LinuxKeyboardHook : IDisposable
             }
         }
 
-        return null;
+        if (bestMatch == null && fallbackMatch == null && openFailCount > 10)
+        {
+            log?.Invoke($"\n⚠ Không thể mở {openFailCount} devices. Có thể thiếu quyền.");
+            log?.Invoke($"  Chạy: sudo usermod -aG input $USER && logout");
+        }
+
+        var result = bestMatch ?? fallbackMatch;
+        if (result != null)
+            log?.Invoke($"\n→ Sử dụng: {result}");
+        else
+            log?.Invoke($"\n✗ Không tìm thấy keyboard device nào phù hợp.");
+
+        return result;
     }
 
     /// <summary>
@@ -143,10 +202,10 @@ public class LinuxKeyboardHook : IDisposable
     /// </summary>
     public void Install(string? devicePath = null)
     {
-        devicePath ??= FindKeyboardDevice();
+        devicePath ??= FindKeyboardDevice(DebugLog);
         if (devicePath == null)
         {
-            Error?.Invoke(this, "Không tìm thấy keyboard device. Kiểm tra quyền: sudo usermod -aG input $USER");
+            Error?.Invoke(this, "Không tìm thấy keyboard device. Kiểm tra quyền: sudo usermod -aG input $USER && logout\nNếu dùng VM (VMware/VirtualBox): đảm bảo VM có keyboard device.");
             return;
         }
 

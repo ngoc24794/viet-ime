@@ -198,20 +198,54 @@ install_linux() {
         fi
     fi
 
-    # 5. Tạo .desktop file (cho app launcher)
-    local DESKTOP_DIR="$HOME/.local/share/applications"
-    mkdir -p "$DESKTOP_DIR"
-    cat > "$DESKTOP_DIR/vietime.desktop" << EOF
+    # 5. Tải và cài đặt icon
+    info "Cài đặt icon..."
+    local ICON_DIR="$HOME/.local/share/icons/hicolor/scalable/apps"
+    local ICON_256_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
+    local ICON_URL="https://raw.githubusercontent.com/$REPO/master/src/VietIME.Linux.App/Assets/vietime.svg"
+    local ICON_PNG_URL="https://raw.githubusercontent.com/$REPO/master/src/VietIME.Linux.App/Assets/tray-icon-on.png"
+
+    mkdir -p "$ICON_DIR" "$ICON_256_DIR"
+    curl -sSL -o "$ICON_DIR/vietime.svg" "$ICON_URL" 2>/dev/null && ok "Icon SVG đã cài" || true
+    curl -sSL -o "$ICON_256_DIR/vietime.png" "$ICON_PNG_URL" 2>/dev/null || true
+
+    # Cập nhật icon cache
+    gtk-update-icon-cache -f "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
+
+    # 6. Tạo .desktop file (cho app launcher)
+    local APP_DESKTOP_DIR="$HOME/.local/share/applications"
+    mkdir -p "$APP_DESKTOP_DIR"
+    cat > "$APP_DESKTOP_DIR/vietime.desktop" << EOF
 [Desktop Entry]
 Type=Application
 Name=VietIME
+GenericName=Vietnamese Input Method
 Comment=Bộ gõ Tiếng Việt cho Linux
 Exec=$INSTALL_DIR/$BIN_NAME
-Icon=input-keyboard
-Categories=Utility;TextTools;
+Icon=vietime
+Categories=Utility;TextTools;System;
 Terminal=false
 StartupNotify=false
+Keywords=Vietnamese;Input;IME;Telex;VNI;
 EOF
+
+    # Cập nhật desktop database
+    update-desktop-database "$APP_DESKTOP_DIR" 2>/dev/null || true
+
+    # 7. Tạo shortcut trên Desktop
+    local USER_DESKTOP="$HOME/Desktop"
+    if [ ! -d "$USER_DESKTOP" ]; then
+        # Thử xdg-user-dir (hỗ trợ tên thư mục tiếng Việt/locale khác)
+        USER_DESKTOP=$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")
+    fi
+
+    if [ -d "$USER_DESKTOP" ]; then
+        cp "$APP_DESKTOP_DIR/vietime.desktop" "$USER_DESKTOP/vietime.desktop"
+        chmod +x "$USER_DESKTOP/vietime.desktop"
+        # Đánh dấu trusted (GNOME 42+)
+        gio set "$USER_DESKTOP/vietime.desktop" metadata::trusted true 2>/dev/null || true
+        ok "Đã tạo shortcut trên Desktop"
+    fi
 
     echo ""
     ok "Cài đặt thành công!"
@@ -269,6 +303,9 @@ uninstall() {
         Linux)
             rm -f "$HOME/.local/bin/vietime"
             rm -f "$HOME/.local/share/applications/vietime.desktop"
+            rm -f "$(xdg-user-dir DESKTOP 2>/dev/null || echo "$HOME/Desktop")/vietime.desktop"
+            rm -f "$HOME/.local/share/icons/hicolor/scalable/apps/vietime.svg"
+            rm -f "$HOME/.local/share/icons/hicolor/256x256/apps/vietime.png"
             rm -f "$HOME/.config/systemd/user/vietime.service"
             systemctl --user disable vietime 2>/dev/null || true
             ok "Đã gỡ VietIME"

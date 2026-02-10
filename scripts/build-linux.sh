@@ -46,10 +46,18 @@ mkdir -p "$APPDIR/usr/share/icons/hicolor/256x256/apps"
 cp "$PUBLISH_DIR/bin/VietIME" "$APPDIR/usr/bin/VietIME"
 chmod +x "$APPDIR/usr/bin/VietIME"
 
-# Copy icon (tray icon làm app icon)
+# Copy icons
+mkdir -p "$APPDIR/usr/share/icons/hicolor/scalable/apps"
+if [ -f "$ROOT_DIR/src/VietIME.Linux.App/Assets/vietime.svg" ]; then
+    cp "$ROOT_DIR/src/VietIME.Linux.App/Assets/vietime.svg" \
+       "$APPDIR/usr/share/icons/hicolor/scalable/apps/vietime.svg"
+    cp "$ROOT_DIR/src/VietIME.Linux.App/Assets/vietime.svg" \
+       "$APPDIR/vietime.svg"
+fi
 if [ -f "$ROOT_DIR/src/VietIME.Linux.App/Assets/tray-icon-on.png" ]; then
     cp "$ROOT_DIR/src/VietIME.Linux.App/Assets/tray-icon-on.png" \
        "$APPDIR/usr/share/icons/hicolor/256x256/apps/vietime.png"
+    # Fallback PNG cho hệ thống không hỗ trợ SVG
     cp "$ROOT_DIR/src/VietIME.Linux.App/Assets/tray-icon-on.png" \
        "$APPDIR/vietime.png"
 fi

@@ -5,7 +5,7 @@
         mc:Ignorable="d"
         x:Class="VietIME.Linux.App.MainWindow"
         Title="VietIME"
-        Width="420" Height="500"
+        Width="420" Height="540"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
         Background="{StaticResource BackgroundBrush}">
