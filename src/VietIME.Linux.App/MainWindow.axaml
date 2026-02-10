@@ -1,0 +1,179 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        x:Class="VietIME.Linux.App.MainWindow"
+        Title="VietIME"
+        Width="420" Height="500"
+        WindowStartupLocation="CenterScreen"
+        CanResize="False"
+        Background="{StaticResource BackgroundBrush}">
+
+    <StackPanel Margin="16">
+
+        <!-- Status Card -->
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="18" Margin="0,0,0,10">
+            <StackPanel>
+                <!-- Logo + Name -->
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,14">
+                    <Border Width="42" Height="42" CornerRadius="10" Background="#14141C">
+                        <TextBlock Text="V" FontSize="22" FontWeight="Bold" Foreground="#D72828"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <StackPanel Margin="12,2,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="VietIME" FontSize="20" FontWeight="Bold"
+                                   Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="Bộ gõ Tiếng Việt cho Linux" FontSize="11"
+                                   Foreground="{StaticResource TextMutedBrush}" Margin="0,1,0,0" />
+                        <TextBlock Text="Tác giả: Đỗ Nam — Teacher THCS Duyên Thái" FontSize="10"
+                                   Foreground="{StaticResource TextDimBrush}" Margin="0,2,0,0"
+                                   FontStyle="Italic" />
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Toggle + Status -->
+                <Grid Margin="0,0,0,10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+
+                    <ToggleSwitch x:Name="toggleEnabled" Grid.Column="0"
+                                  IsChecked="True" OnContent="" OffContent=""
+                                  IsCheckedChanged="ToggleEnabled_Changed" />
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0"
+                                VerticalAlignment="Center">
+                        <Ellipse x:Name="statusDot" Width="8" Height="8"
+                                 Fill="{StaticResource SuccessBrush}" Margin="0,0,6,0" />
+                        <TextBlock x:Name="txtStatus" Text="Đang bật" FontSize="13"
+                                   Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text=" — " Foreground="{StaticResource TextDimBrush}" FontSize="13" />
+                        <TextBlock x:Name="txtEngine" Text="Telex" FontSize="13"
+                                   Foreground="{StaticResource PrimaryBrush}" FontWeight="SemiBold" />
+                    </StackPanel>
+                </Grid>
+
+                <!-- Error message -->
+                <TextBlock x:Name="txtError" Text="" FontSize="12"
+                           Foreground="{StaticResource ErrorBrush}"
+                           TextWrapping="Wrap" IsVisible="False"
+                           Margin="0,0,0,6" />
+            </StackPanel>
+        </Border>
+
+        <!-- Input Method Card -->
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="18" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="KIỂU GÕ" FontSize="10" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextDimBrush}" Margin="0,0,0,10" />
+
+                <RadioButton x:Name="rbTelex" IsChecked="True"
+                             IsCheckedChanged="InputMethod_Changed" GroupName="InputMethod">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Telex" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="  aa=â  dd=đ  s=sắc"
+                                   Foreground="{StaticResource TextDimBrush}" FontSize="11" />
+                    </StackPanel>
+                </RadioButton>
+
+                <RadioButton x:Name="rbVNI"
+                             IsCheckedChanged="InputMethod_Changed" GroupName="InputMethod"
+                             Margin="0,4,0,0">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="VNI" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextBrush}" />
+                        <TextBlock Text="    6=â  9=đ  1=sắc"
+                                   Foreground="{StaticResource TextDimBrush}" FontSize="11" />
+                    </StackPanel>
+                </RadioButton>
+            </StackPanel>
+        </Border>
+
+        <!-- Shortcut Card -->
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="18" Margin="0,0,0,10">
+            <StackPanel>
+                <TextBlock Text="PHÍM TẮT" FontSize="10" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextDimBrush}" Margin="0,0,0,10" />
+
+                <!-- Shortcut Ctrl+` -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Bật/tắt VietIME" FontSize="13"
+                               VerticalAlignment="Center" Foreground="{StaticResource TextBrush}" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Border Background="{StaticResource SurfaceLightBrush}" CornerRadius="6"
+                                Padding="8,3">
+                            <TextBlock Text="Ctrl" FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}" />
+                        </Border>
+                        <TextBlock Text=" + " Foreground="{StaticResource TextDimBrush}"
+                                   VerticalAlignment="Center" FontSize="11" />
+                        <Border Background="{StaticResource SurfaceLightBrush}" CornerRadius="6"
+                                Padding="8,3">
+                            <TextBlock Text="`" FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}"
+                                       FontFamily="monospace" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+
+                <Border Height="1" Background="{StaticResource SurfaceLightBrush}" Margin="0,4,0,8" />
+
+                <!-- Shortcut Ctrl+Shift -->
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Column="0" Text="Tắt gõ tiếng Việt" FontSize="13"
+                               VerticalAlignment="Center" Foreground="{StaticResource TextBrush}" />
+                    <StackPanel Grid.Column="1" Orientation="Horizontal">
+                        <Border Background="{StaticResource SurfaceLightBrush}" CornerRadius="6"
+                                Padding="8,3">
+                            <TextBlock Text="Ctrl" FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}" />
+                        </Border>
+                        <TextBlock Text=" + " Foreground="{StaticResource TextDimBrush}"
+                                   VerticalAlignment="Center" FontSize="11" />
+                        <Border Background="{StaticResource SurfaceLightBrush}" CornerRadius="6"
+                                Padding="8,3">
+                            <TextBlock Text="Shift" FontSize="11"
+                                       Foreground="{StaticResource TextMutedBrush}" />
+                        </Border>
+                    </StackPanel>
+                </Grid>
+            </StackPanel>
+        </Border>
+
+        <!-- Footer -->
+        <Grid Margin="0,2,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <TextBlock Grid.Column="0" FontSize="10" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextDimBrush}">
+                <Run Text="v1.0.0" /> <Run Text=" — " /> <Run Text="Đỗ Nam" FontWeight="SemiBold" />
+                <Run Text=" — Linux" />
+            </TextBlock>
+
+            <Button Grid.Column="1" Content="Ẩn" Click="BtnMinimize_Click"
+                    Margin="0,0,6,0" Padding="14,8"
+                    Background="{StaticResource SurfaceLightBrush}"
+                    Foreground="{StaticResource TextBrush}" />
+            <Button Grid.Column="2" Content="Thoát" Click="BtnExit_Click"
+                    Padding="14,8"
+                    Background="{StaticResource ErrorBrush}"
+                    Foreground="#1E1E2E" FontWeight="SemiBold" />
+        </Grid>
+
+    </StackPanel>
+</Window>

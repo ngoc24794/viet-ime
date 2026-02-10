@@ -1,0 +1,67 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:VietIME.Linux.App"
+             x:Class="VietIME.Linux.App.App"
+             x:CompileBindings="True"
+             x:DataType="local:App"
+             RequestedThemeVariant="Dark">
+
+    <Application.Styles>
+        <FluentTheme />
+    </Application.Styles>
+
+    <Application.Resources>
+        <!-- ═══════════════════════════════════════════ -->
+        <!-- VietIME Dark Theme - Catppuccin Mocha       -->
+        <!-- ═══════════════════════════════════════════ -->
+        <Color x:Key="BackgroundColor">#1E1E2E</Color>
+        <Color x:Key="SurfaceColor">#313244</Color>
+        <Color x:Key="SurfaceLightColor">#45475A</Color>
+        <Color x:Key="PrimaryColor">#89B4FA</Color>
+        <Color x:Key="SuccessColor">#A6E3A1</Color>
+        <Color x:Key="ErrorColor">#F38BA8</Color>
+        <Color x:Key="TextColor">#CDD6F4</Color>
+        <Color x:Key="TextMutedColor">#A6ADC8</Color>
+        <Color x:Key="TextDimColor">#6C7086</Color>
+
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource BackgroundColor}" />
+        <SolidColorBrush x:Key="SurfaceBrush" Color="{StaticResource SurfaceColor}" />
+        <SolidColorBrush x:Key="SurfaceLightBrush" Color="{StaticResource SurfaceLightColor}" />
+        <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource PrimaryColor}" />
+        <SolidColorBrush x:Key="SuccessBrush" Color="{StaticResource SuccessColor}" />
+        <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource ErrorColor}" />
+        <SolidColorBrush x:Key="TextBrush" Color="{StaticResource TextColor}" />
+        <SolidColorBrush x:Key="TextMutedBrush" Color="{StaticResource TextMutedColor}" />
+        <SolidColorBrush x:Key="TextDimBrush" Color="{StaticResource TextDimColor}" />
+    </Application.Resources>
+
+    <TrayIcon.Icons>
+        <TrayIcons>
+            <TrayIcon ToolTipText="VietIME — Bật (Telex)"
+                      Icon="avares://VietIME/Assets/tray-icon-on.png"
+                      Command="{Binding ToggleCommand}">
+                <TrayIcon.Menu>
+                    <NativeMenu>
+                        <NativeMenuItem Header="VietIME - © Đỗ Nam 2026"
+                                        IsEnabled="False" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Bật/tắt VietIME"
+                                        Command="{Binding ToggleCommand}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Telex"
+                                        Command="{Binding SetTelexCommand}" />
+                        <NativeMenuItem Header="VNI"
+                                        Command="{Binding SetVniCommand}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Cài đặt..."
+                                        Command="{Binding ShowSettingsCommand}" />
+                        <NativeMenuItemSeparator />
+                        <NativeMenuItem Header="Thoát"
+                                        Command="{Binding ExitCommand}" />
+                    </NativeMenu>
+                </TrayIcon.Menu>
+            </TrayIcon>
+        </TrayIcons>
+    </TrayIcon.Icons>
+
+</Application>
