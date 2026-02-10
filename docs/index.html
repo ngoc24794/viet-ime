@@ -393,6 +393,55 @@
             color: var(--text-dim);
         }
 
+        /* Install command */
+        .install-cmd {
+            background: #0d1117;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 24px;
+            margin-top: 24px;
+            margin-bottom: 12px;
+            position: relative;
+            max-width: 720px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .install-cmd code {
+            font-family: 'Consolas', 'Cascadia Code', 'SF Mono', monospace;
+            font-size: 0.92rem;
+            color: #e6edf3;
+            word-break: break-all;
+            user-select: all;
+        }
+        .install-cmd .cmd-prefix {
+            color: var(--green);
+            user-select: none;
+        }
+        .install-cmd-copy {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-dim);
+            padding: 6px 12px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .install-cmd-copy:hover {
+            background: var(--bg-card-hover);
+            color: var(--text);
+        }
+        .install-or {
+            text-align: center;
+            color: var(--text-dim);
+            font-size: 0.85rem;
+            margin: 16px 0;
+        }
+
         /* Tech */
         .tech-pills {
             display: flex;
@@ -480,6 +529,15 @@
                     Xem Releases
                 </a>
             </div>
+
+            <!-- Install command -->
+            <div class="install-cmd">
+                <span class="cmd-prefix">$ </span><code>curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash</code>
+                <button class="install-cmd-copy" onclick="navigator.clipboard.writeText('curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+            </div>
+            <p style="text-align: center; font-size: 0.82rem; color: var(--text-dim);">
+                macOS & Linux — cài đặt bằng 1 lệnh. Tự phát hiện hệ điều hành.
+            </p>
         </section>
 
         <!-- Stats -->
@@ -677,7 +735,21 @@
         <!-- Install -->
         <section id="install">
             <h2 class="section-title">Cài đặt</h2>
-            <p class="section-subtitle">3 bước — không cần cài gì thêm.</p>
+            <p class="section-subtitle">Chọn cách cài phù hợp với bạn.</p>
+
+            <!-- Quick install command -->
+            <div style="text-align: center; margin-bottom: 32px;">
+                <h3 style="font-size: 1.1rem; margin-bottom: 8px;">macOS & Linux — Cài bằng 1 lệnh</h3>
+                <div class="install-cmd">
+                    <span class="cmd-prefix">$ </span><code>curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash</code>
+                    <button class="install-cmd-copy" onclick="navigator.clipboard.writeText('curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+                </div>
+                <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 8px;">
+                    Tự phát hiện OS, tải binary, cài dependencies, thiết lập quyền. Gỡ: thêm <code style="color:var(--accent);">--uninstall</code>
+                </p>
+            </div>
+
+            <div class="install-or">── hoặc tải thủ công ──</div>
 
             <div class="install-steps">
                 <div class="install-step">
@@ -688,7 +760,7 @@
                 <div class="install-step">
                     <div class="step-num">2</div>
                     <h3>Cài đặt nhanh</h3>
-                    <p>Windows: chạy trực tiếp EXE.<br>macOS: mở DMG, kéo vào Applications.<br>Linux: <code style="font-size:0.8rem;">chmod +x</code> rồi chạy AppImage.</p>
+                    <p>Windows: chạy trực tiếp EXE.<br>macOS: mở DMG, kéo vào Applications.<br>Linux: <code style="font-size:0.8rem;">chmod +x</code> rồi chạy.</p>
                 </div>
                 <div class="install-step">
                     <div class="step-num">3</div>
