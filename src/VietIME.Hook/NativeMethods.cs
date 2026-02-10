@@ -236,6 +236,13 @@ public static class NativeMethods
     public static extern bool GetKeyboardState(byte[] lpKeyState);
     
     
+    /// <summary>
+    /// Giải phóng GDI icon handle
+    /// </summary>
+    [DllImport("user32.dll")]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static extern bool DestroyIcon(IntPtr hIcon);
+    
     #region Clipboard APIs
     
     [DllImport("user32.dll")]

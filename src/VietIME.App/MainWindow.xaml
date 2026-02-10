@@ -8,6 +8,7 @@
         Height="480" Width="420"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
+        ShowInTaskbar="False"
         WindowStyle="SingleBorderWindow"
         Background="{StaticResource BackgroundBrush}">
 
