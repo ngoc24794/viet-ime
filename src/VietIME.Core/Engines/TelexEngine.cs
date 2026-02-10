@@ -312,7 +312,8 @@ public class TelexEngine : IInputEngine
         var currentTone = VietnameseChar.GetToneIndex(oldVowel);
         
         // Toggle: Nếu nguyên âm đã có dấu giống dấu đang gõ -> xoá dấu và thêm ký tự gốc
-        // Ví dụ: tés + s -> tess (xoá dấu sắc, thêm 's')
+        // Ví dụ: tẻ + r -> ter (xoá dấu hỏi, thêm 'r')
+        // Gửi lại TOÀN BỘ buffer để đảm bảo đúng trên mọi terminal
         if (currentTone == tone && tone != VietnameseChar.ToneIndex.None)
         {
             // Xoá dấu thanh
@@ -322,8 +323,10 @@ public class TelexEngine : IInputEngine
             // Thêm ký tự dấu gốc vào buffer
             _buffer.Add(originalKey);
             
-            int toggleBackspace = _buffer.Count - vowelPos - 1; // -1 vì ký tự mới thêm không cần backspace
-            string toggleOutput = new string(_buffer.Skip(vowelPos).ToArray());
+            // Gửi toàn bộ buffer: xoá hết ký tự cũ trên màn hình, ghi lại từ đầu
+            // Số ký tự trên màn hình = buffer.Count - 1 (trừ ký tự mới thêm chưa hiển)
+            int toggleBackspace = _buffer.Count - 1;
+            string toggleOutput = new string(_buffer.ToArray());
             
             return (toggleBackspace, toggleOutput);
         }
@@ -650,27 +653,35 @@ public class TelexEngine : IInputEngine
         }
         
         // Kiểm tra pattern đặc biệt: 'uo' hoặc 'ưo' -> chuyển thành 'ươ'
-        // Tìm pattern kể cả khi có phụ âm cuối xen giữa
+        // Chỉ tìm trong âm tiết hiện tại
         // Ví dụ: "duo" + w -> "dươ", "duoc" + w -> "dươc", "dưo" + w -> "dươ"
         {
             int uPos = -1, oPos = -1;
+            bool enteredVowelCluster = false;
             for (int i = _buffer.Count - 1; i >= 0; i--)
             {
                 char c = _buffer[i];
                 char lowerC = char.ToLower(VietnameseChar.GetVowelWithoutTone(c));
 
-                if (oPos < 0 && lowerC == 'o')
+                if (IsVowel(c))
                 {
-                    oPos = i;
+                    enteredVowelCluster = true;
+                    if (oPos < 0 && lowerC == 'o')
+                    {
+                        oPos = i;
+                    }
+                    else if (oPos >= 0 && (lowerC == 'u' || lowerC == 'ư'))
+                    {
+                        uPos = i;
+                        break;
+                    }
                 }
-                else if (oPos >= 0 && (lowerC == 'u' || lowerC == 'ư'))
+                else
                 {
-                    uPos = i;
-                    break;
-                }
-                else if (oPos >= 0 && !IsVowel(c))
-                {
-                    // Cho phép vượt qua phụ âm cuối để tìm 'u'
+                    // Đã vào vùng nguyên âm rồi gặp phụ âm → ra khỏi âm tiết
+                    if (enteredVowelCluster)
+                        break;
+                    // Chưa vào vùng nguyên âm → phụ âm cuối
                     char lch = char.ToLower(c);
                     if (!(lch is 'c' or 'm' or 'n' or 'p' or 't' or 'g' or 'h'))
                         break;
@@ -710,32 +721,71 @@ public class TelexEngine : IInputEngine
             }
         }
         
-        // Tìm nguyên âm gần nhất có thể chuyển đổi (không dừng khi gặp phụ âm)
-        // Để hỗ trợ gõ linh hoạt hơn, ví dụ: "dudw" -> "dưd" thay vì "dudw"
-        for (int i = _buffer.Count - 1; i >= 0; i--)
+        // Tìm nguyên âm gần nhất TRONG ÂM TIẾT HIỆN TẠI để chuyển đổi
+        // Ví dụ: "dudw" -> "dưd" (tìm 'u' trong cùng âm tiết)
         {
-            char c = _buffer[i];
-            char lowerC = char.ToLower(c);
-            
-            // Chỉ xử lý a, o, u (ă, ô đã được transform rồi)
-            if (lowerC is 'a' or 'o' or 'u')
+            bool enteredVowelCluster = false;
+            for (int i = _buffer.Count - 1; i >= 0; i--)
             {
-                char newVowel = VietnameseChar.TransformVowel(c, 'w');
+                char c = _buffer[i];
+                char lowerC = char.ToLower(c);
                 
-                if (newVowel != c)
+                if (IsVowel(c))
                 {
-                    _buffer[i] = newVowel;
-                    
-                    int backspaceCount = _buffer.Count - i;
-                    string output = new string(_buffer.Skip(i).ToArray());
-                    
-                    return (backspaceCount, output);
+                    enteredVowelCluster = true;
+                    // Chỉ xử lý a, o, u (ă, ô đã được transform rồi)
+                    if (lowerC is 'a' or 'o' or 'u')
+                    {
+                        char newVowel = VietnameseChar.TransformVowel(c, 'w');
+                        
+                        if (newVowel != c)
+                        {
+                            _buffer[i] = newVowel;
+                            
+                            int backspaceCount = _buffer.Count - i;
+                            string output = new string(_buffer.Skip(i).ToArray());
+                            
+                            return (backspaceCount, output);
+                        }
+                    }
+                }
+                else
+                {
+                    // Đã vào vùng nguyên âm rồi gặp phụ âm → ra khỏi âm tiết
+                    if (enteredVowelCluster)
+                        break;
+                    // Chưa vào vùng nguyên âm → phụ âm cuối
+                    char lowerCh = char.ToLower(c);
+                    if (!(lowerCh is 'c' or 'm' or 'n' or 'p' or 't' or 'g' or 'h'))
+                        break;
                 }
             }
-            // Tiếp tục tìm, không break khi gặp phụ âm
         }
         
-        // Không tìm thấy nguyên âm để chuyển -> không xử lý, để ra chữ 'w' thường
+        // Không tìm thấy nguyên âm để chuyển đổi
+        // Nếu buffer chỉ có phụ âm (chưa có nguyên âm nào) → w = ư (viết tắt)
+        // Ví dụ: nhw → như, thw → thư, chwx → chữ, lw → lư
+        {
+            bool hasVowel = false;
+            for (int i = 0; i < _buffer.Count; i++)
+            {
+                if (IsVowel(_buffer[i]))
+                {
+                    hasVowel = true;
+                    break;
+                }
+            }
+
+            if (!hasVowel)
+            {
+                bool isUpper = char.IsUpper(key);
+                char uHorn = isUpper ? 'Ư' : 'ư';
+                _buffer.Add(uHorn);
+                return (0, uHorn.ToString());
+            }
+        }
+
+        // Có nguyên âm nhưng không chuyển được → không xử lý, để ra chữ 'w' thường
         return null;
     }
     
@@ -811,55 +861,66 @@ public class TelexEngine : IInputEngine
             return (1, reverted.ToString() + key);
         }
 
-        // Tìm ngược buffer: nếu có cùng nguyên âm gốc (a/e/o) ở trước,
+        // Tìm ngược buffer TRONG CÙNG ÂM TIẾT: nếu có cùng nguyên âm gốc (a/e/o) ở trước,
         // chuyển nguyên âm đó thành mũ và bỏ ký tự mới
-        // Ví dụ: "toi" + o -> "tôi" (tìm 'o' ở vị trí 1, chuyển thành 'ô')
-        for (int i = _buffer.Count - 1; i >= 0; i--)
+        // Ví dụ: "toi" + o -> "tôi", "muon" + o -> "muôn"
+        // Giới hạn: chỉ tìm trong âm tiết hiện tại, không vượt ranh giới âm tiết
         {
-            char c = _buffer[i];
-            char lowerC = char.ToLower(VietnameseChar.GetVowelWithoutTone(c));
-
-            if (lowerC == lowerKey)
+            bool enteredVowelCluster = false;
+            for (int i = _buffer.Count - 1; i >= 0; i--)
             {
-                char newVowel = lowerKey switch
-                {
-                    'a' => 'â',
-                    'e' => 'ê',
-                    'o' => 'ô',
-                    _ => c
-                };
+                char c = _buffer[i];
+                char lowerC = char.ToLower(VietnameseChar.GetVowelWithoutTone(c));
 
-                if (newVowel == c) break; // Không chuyển được
-
-                if (char.IsUpper(c))
+                if (IsVowel(c))
                 {
-                    newVowel = char.ToUpper(newVowel);
+                    enteredVowelCluster = true;
+                    
+                    if (lowerC == lowerKey)
+                    {
+                        char newVowel = lowerKey switch
+                        {
+                            'a' => 'â',
+                            'e' => 'ê',
+                            'o' => 'ô',
+                            _ => c
+                        };
+
+                        if (newVowel == c) break; // Không chuyển được
+
+                        if (char.IsUpper(c))
+                        {
+                            newVowel = char.ToUpper(newVowel);
+                        }
+
+                        // Giữ lại dấu thanh nếu có
+                        var existingTone = VietnameseChar.GetToneIndex(c);
+                        if (existingTone != VietnameseChar.ToneIndex.None)
+                        {
+                            newVowel = VietnameseChar.ApplyTone(newVowel, existingTone);
+                        }
+
+                        _buffer[i] = newVowel;
+
+                        // Xóa từ vị trí nguyên âm đến cuối, ghi lại
+                        int backspaceCount = _buffer.Count - i;
+                        string output = new string(_buffer.Skip(i).ToArray());
+
+                        return (backspaceCount, output);
+                    }
                 }
-
-                // Giữ lại dấu thanh nếu có
-                var existingTone = VietnameseChar.GetToneIndex(c);
-                if (existingTone != VietnameseChar.ToneIndex.None)
+                else
                 {
-                    newVowel = VietnameseChar.ApplyTone(newVowel, existingTone);
+                    // Đã vào vùng nguyên âm rồi gặp phụ âm → ra khỏi âm tiết hiện tại → dừng
+                    // Ví dụ: "donamthu" + 'o': sau 'u' gặp 'h' → dừng, không match 'o' ở "do"
+                    if (enteredVowelCluster)
+                        break;
+                    
+                    // Chưa vào vùng nguyên âm → đang ở phụ âm cuối (c,m,n,p,t,ng,nh,ch)
+                    char lowerCh = char.ToLower(c);
+                    if (!(lowerCh is 'c' or 'm' or 'n' or 'p' or 't' or 'g' or 'h'))
+                        break;
                 }
-
-                _buffer[i] = newVowel;
-
-                // Xóa từ vị trí nguyên âm đến cuối, ghi lại
-                int backspaceCount = _buffer.Count - i;
-                string output = new string(_buffer.Skip(i).ToArray());
-
-                return (backspaceCount, output);
-            }
-
-            // Chỉ tìm trong cùng nhóm nguyên âm + phụ âm cuối, không vượt qua phụ âm đầu
-            // Dừng nếu gặp ký tự không phải nguyên âm VÀ không phải phụ âm cuối hợp lệ
-            if (!IsVowel(c))
-            {
-                // Cho phép vượt qua phụ âm cuối (c,m,n,p,t,g,h) để tìm nguyên âm
-                char lowerCh = char.ToLower(c);
-                if (!(lowerCh is 'c' or 'm' or 'n' or 'p' or 't' or 'g' or 'h'))
-                    break;
             }
         }
         
@@ -875,11 +936,13 @@ public class TelexEngine : IInputEngine
     /// Undo tất cả dấu/mũ/móc trong buffer, gửi output sửa lại,
     /// rồi reset buffer và bắt đầu từ mới với ký tự hiện tại.
     /// Ví dụ: buffer "pú" + key 'h' → xoá "pú" (2 bs), ghi "push", reset buffer thành ['h']
+    /// Ví dụ: buffer "tẻ" + "mina" + key 'l' → xoá "tẻmina" (6 bs), ghi "terminal"
     /// </summary>
     private void UndoAndReset(ProcessKeyResult result, char newKey)
     {
-        // Tìm phím dấu đã dùng (s/f/r/x/j) dựa trên dấu thanh trong buffer
+        // Tìm phím dấu đã dùng (s/f/r/x/j) và VỊ TRÍ nguyên âm đã mang dấu
         char? toneChar = null;
+        int toneVowelPos = -1;
         for (int i = 0; i < _buffer.Count; i++)
         {
             var tone = VietnameseChar.GetToneIndex(_buffer[i]);
@@ -894,9 +957,13 @@ public class TelexEngine : IInputEngine
                     VietnameseChar.ToneIndex.Dot => 'j',
                     _ => null
                 };
+                toneVowelPos = i;
                 break;
             }
         }
+
+        // Số ký tự trên màn hình cần xoá = số ký tự trong buffer
+        int bs = _buffer.Count;
 
         // Xoá tất cả dấu/mũ/móc trong buffer
         for (int i = 0; i < _buffer.Count; i++)
@@ -923,10 +990,17 @@ public class TelexEngine : IInputEngine
             _buffer[i] = c;
         }
 
-        // Tính output: buffer gốc + phím dấu (nếu có) + ký tự mới
-        int bs = _buffer.Count;
+        // Chèn phím dấu vào ĐÚNG vị trí (ngay sau nguyên âm đã mang dấu)
+        // Ví dụ: buffer ['t','e','m','i','n','a'] + toneChar='r' tại pos=1
+        //       → insert 'r' tại pos 2 → ['t','e','r','m','i','n','a']
+        //       → output = "termina" + newKey
+        if (toneChar.HasValue && toneVowelPos >= 0)
+        {
+            _buffer.Insert(toneVowelPos + 1, toneChar.Value);
+        }
+
         string undone = new string(_buffer.ToArray());
-        string output = undone + (toneChar?.ToString() ?? "") + newKey;
+        string output = undone + newKey;
 
         result.Handled = true;
         result.BackspaceCount = bs;

@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AssemblyName>VietIME</AssemblyName>
+    <Version>1.0.0</Version>
+    <Company>Do Nam</Company>
+    <Authors>Do Nam</Authors>
+    <Copyright>Copyright (c) 2024-2026 Do Nam. All rights reserved.</Copyright>
+    <Product>VietIME - Bo go tieng Viet</Product>
+    <Description>Bo go tieng Viet cho macOS</Description>
+
+    <!-- Portable exe settings -->
+    <PublishSingleFile>true</PublishSingleFile>
+    <SelfContained>true</SelfContained>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\VietIME.Core\VietIME.Core.csproj" />
+    <ProjectReference Include="..\VietIME.Mac\VietIME.Mac.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.2.*" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.2.*" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.2.*" />
+    <PackageReference Include="Avalonia.Markup.Xaml.Loader" Version="11.2.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+  </ItemGroup>
+
+</Project>
