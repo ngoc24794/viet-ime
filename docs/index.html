@@ -530,13 +530,21 @@
                 </a>
             </div>
 
-            <!-- Install command -->
-            <div class="install-cmd">
+            <!-- Install commands -->
+            <div style="display: flex; gap: 8px; justify-content: center; margin-top: 28px; margin-bottom: 8px;">
+                <button class="install-tab active" onclick="showInstallCmd('unix',this)" style="background: var(--bg-card); border: 1px solid var(--green); color: var(--green); border-radius: 8px; padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">macOS / Linux</button>
+                <button class="install-tab" onclick="showInstallCmd('win',this)" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim); border-radius: 8px; padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">Windows (PowerShell)</button>
+            </div>
+            <div id="cmd-unix" class="install-cmd">
                 <span class="cmd-prefix">$ </span><code>curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash</code>
                 <button class="install-cmd-copy" onclick="navigator.clipboard.writeText('curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
             </div>
+            <div id="cmd-win" class="install-cmd" style="display: none;">
+                <span class="cmd-prefix">PS&gt; </span><code>irm https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.ps1 | iex</code>
+                <button class="install-cmd-copy" onclick="navigator.clipboard.writeText('irm https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.ps1 | iex');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+            </div>
             <p style="text-align: center; font-size: 0.82rem; color: var(--text-dim);">
-                macOS & Linux — cài đặt bằng 1 lệnh. Tự phát hiện hệ điều hành.
+                Cài đặt bằng 1 lệnh. Tự tải, cài vào PATH, tạo shortcut.
             </p>
         </section>
 
@@ -739,13 +747,21 @@
 
             <!-- Quick install command -->
             <div style="text-align: center; margin-bottom: 32px;">
-                <h3 style="font-size: 1.1rem; margin-bottom: 8px;">macOS & Linux — Cài bằng 1 lệnh</h3>
-                <div class="install-cmd">
+                <h3 style="font-size: 1.1rem; margin-bottom: 8px;">Cài bằng 1 lệnh</h3>
+                <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 8px;">
+                    <button class="install-tab active" onclick="showInstallCmd2('unix2',this)" style="background: var(--bg-card); border: 1px solid var(--green); color: var(--green); border-radius: 8px; padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">macOS / Linux</button>
+                    <button class="install-tab" onclick="showInstallCmd2('win2',this)" style="background: var(--bg-card); border: 1px solid var(--border); color: var(--text-dim); border-radius: 8px; padding: 6px 16px; font-size: 0.8rem; cursor: pointer;">Windows</button>
+                </div>
+                <div id="cmd-unix2" class="install-cmd">
                     <span class="cmd-prefix">$ </span><code>curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash</code>
                     <button class="install-cmd-copy" onclick="navigator.clipboard.writeText('curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
                 </div>
+                <div id="cmd-win2" class="install-cmd" style="display: none;">
+                    <span class="cmd-prefix">PS&gt; </span><code>irm https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.ps1 | iex</code>
+                    <button class="install-cmd-copy" onclick="navigator.clipboard.writeText('irm https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.ps1 | iex');this.textContent='Copied!';setTimeout(()=>this.textContent='Copy',1500)">Copy</button>
+                </div>
                 <p style="font-size: 0.82rem; color: var(--text-dim); margin-top: 8px;">
-                    Tự phát hiện OS, tải binary, cài dependencies, thiết lập quyền. Gỡ: thêm <code style="color:var(--accent);">--uninstall</code>
+                    Tự tải, cài vào PATH, tạo shortcut. Gỡ: thêm <code style="color:var(--accent);">--uninstall</code>
                 </p>
             </div>
 
@@ -821,5 +837,25 @@
             </p>
         </div>
     </footer>
+    <script>
+    function showInstallCmd(id, btn) {
+        document.getElementById('cmd-unix').style.display = 'none';
+        document.getElementById('cmd-win').style.display = 'none';
+        document.getElementById('cmd-' + id).style.display = 'block';
+        btn.parentElement.querySelectorAll('button').forEach(b => {
+            b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text-dim)';
+        });
+        btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)';
+    }
+    function showInstallCmd2(id, btn) {
+        document.getElementById('cmd-unix2').style.display = 'none';
+        document.getElementById('cmd-win2').style.display = 'none';
+        document.getElementById('cmd-' + id).style.display = 'block';
+        btn.parentElement.querySelectorAll('button').forEach(b => {
+            b.style.borderColor = 'var(--border)'; b.style.color = 'var(--text-dim)';
+        });
+        btn.style.borderColor = 'var(--green)'; btn.style.color = 'var(--green)';
+    }
+    </script>
 </body>
 </html>
