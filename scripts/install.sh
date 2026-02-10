@@ -209,6 +209,13 @@ install_linux() {
         ok "Udev rule /dev/uinput đã có"
     fi
 
+    # Áp dụng quyền /dev/uinput ngay lập tức (không cần reboot)
+    if [ -e /dev/uinput ]; then
+        sudo chmod 0660 /dev/uinput 2>/dev/null
+        sudo chown root:input /dev/uinput 2>/dev/null
+        ok "Quyền /dev/uinput OK"
+    fi
+
     if [ "$NEED_LOGOUT" = true ]; then
         warn "Cần logout rồi login lại để quyền có hiệu lực!"
     fi
