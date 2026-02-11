@@ -1,0 +1,195 @@
+name: Build All Platforms
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      create_release:
+        description: 'Tạo Release?'
+        type: boolean
+        default: false
+
+jobs:
+  # ═══════════════════════════════════════
+  # Windows (WPF) — chỉ build được trên Windows
+  # ═══════════════════════════════════════
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish Windows
+        run: |
+          dotnet publish src/VietIME.App -c Release -r win-x64 `
+            --self-contained true `
+            -p:PublishSingleFile=true `
+            -p:IncludeNativeLibrariesForSelfExtract=true `
+            -p:EnableCompressionInSingleFile=true `
+            -o ./publish/win
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VietIME-Windows
+          path: ./publish/win/VietIME.exe
+
+  # ═══════════════════════════════════════
+  # macOS (Avalonia) — build trên macOS runner
+  # ═══════════════════════════════════════
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish macOS (arm64)
+        run: |
+          dotnet publish src/VietIME.Mac.App -c Release -r osx-arm64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true \
+            -o ./publish/mac-arm64
+
+      - name: Publish macOS (x64)
+        run: |
+          dotnet publish src/VietIME.Mac.App -c Release -r osx-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true \
+            -o ./publish/mac-x64
+
+      - name: Create DMG (arm64)
+        run: |
+          mkdir -p ./dmg-staging
+          cp ./publish/mac-arm64/VietIME ./dmg-staging/
+          chmod +x ./dmg-staging/VietIME
+          hdiutil create -volname "VietIME" -srcfolder ./dmg-staging \
+            -ov -format UDZO ./publish/VietIME-arm64.dmg
+
+      - name: Create DMG (x64)
+        run: |
+          rm -rf ./dmg-staging/*
+          cp ./publish/mac-x64/VietIME ./dmg-staging/
+          chmod +x ./dmg-staging/VietIME
+          hdiutil create -volname "VietIME" -srcfolder ./dmg-staging \
+            -ov -format UDZO ./publish/VietIME-x64.dmg
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: VietIME-macOS
+          path: |
+            ./publish/VietIME-arm64.dmg
+            ./publish/VietIME-x64.dmg
+
+  # ═══════════════════════════════════════
+  # Linux (Avalonia + evdev) — build trên Ubuntu
+  # ═══════════════════════════════════════
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Publish Linux (x64)
+        run: |
+          dotnet publish src/VietIME.Linux.App -c Release -r linux-x64 \
+            --self-contained true \
+            -p:PublishSingleFile=true \
+            -p:IncludeNativeLibrariesForSelfExtract=true \
+            -p:EnableCompressionInSingleFile=true \
+            -o ./publish/linux
+
+      - name: Prepare binary
+        run: |
+          chmod +x ./publish/linux/VietIME
+          # Tạo tar.gz cho dễ tải
+          cd ./publish/linux && tar -czf ../VietIME-linux-x64.tar.gz VietIME
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: VietIME-Linux
+          path: |
+            ./publish/linux/VietIME
+            ./publish/VietIME-linux-x64.tar.gz
+
+  # ═══════════════════════════════════════
+  # Release — gom artifact từ 3 jobs, tạo GitHub Release
+  # ═══════════════════════════════════════
+  release:
+    needs: [build-windows, build-macos, build-linux]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.create_release == 'true')
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: ./artifacts
+
+      - name: Prepare release files
+        run: |
+          mkdir -p ./release
+          # Windows
+          cp ./artifacts/VietIME-Windows/VietIME.exe ./release/VietIME.exe
+          # macOS
+          cp ./artifacts/VietIME-macOS/VietIME-arm64.dmg ./release/VietIME-arm64.dmg
+          cp ./artifacts/VietIME-macOS/VietIME-x64.dmg ./release/VietIME-x64.dmg
+          # Linux
+          cp ./artifacts/VietIME-Linux/VietIME ./release/VietIME
+          cp ./artifacts/VietIME-Linux/VietIME-linux-x64.tar.gz ./release/VietIME-linux-x64.tar.gz
+
+          echo "📦 Release files:"
+          ls -lh ./release/
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./release/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          body: |
+            ## 🇻🇳 VietIME — Bộ gõ Tiếng Việt
+
+            ### Tải xuống
+            | Nền tảng | File | Ghi chú |
+            |----------|------|---------|
+            | 🪟 Windows | `VietIME.exe` | Portable, không cần cài đặt |
+            | 🍎 macOS (Apple Silicon) | `VietIME-arm64.dmg` | M1/M2/M3/M4 |
+            | 🍎 macOS (Intel) | `VietIME-x64.dmg` | Mac Intel |
+            | 🐧 Linux | `VietIME` hoặc `VietIME-linux-x64.tar.gz` | Ubuntu/Debian x86_64 |
+
+            ### Cài đặt nhanh (1 lệnh)
+            **macOS / Linux:**
+            ```bash
+            curl -sSL https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.sh | bash
+            ```
+            **Windows (PowerShell):**
+            ```powershell
+            irm https://raw.githubusercontent.com/donamvn/viet-ime/master/scripts/install.ps1 | iex
+            ```
+
+            ### Phím tắt
+            - **Windows**: `Ctrl + Shift` bật/tắt
+            - **macOS**: `⌘ + ~` bật/tắt
+            - **Linux**: `Ctrl + ~` bật/tắt

@@ -1,0 +1,13 @@
+{
+  "solution": {
+    "path": "VietIME.sln",
+    "projects": [
+      "src/VietIME.Core/VietIME.Core.csproj",
+      "src/VietIME.Hook/VietIME.Hook.csproj",
+      "src/VietIME.Mac/VietIME.Mac.csproj",
+      "src/VietIME.Mac.App/VietIME.Mac.App.csproj",
+      "src/VietIME.Linux/VietIME.Linux.csproj",
+      "src/VietIME.Linux.App/VietIME.Linux.App.csproj"
+    ]
+  }
+}
