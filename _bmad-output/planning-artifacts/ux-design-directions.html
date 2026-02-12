@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VietIME - Design Directions</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #f5f5f5;
+            color: #1e293b;
+            padding: 24px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .showcase {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 24px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .direction {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .direction-header {
+            padding: 16px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .direction-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        .direction-badge {
+            font-size: 11px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .badge-minimal { background: #ecfdf5; color: #2563eb; }
+        .badge-standard { background: #dbeafe; color: #1e40af; }
+        .badge-detailed { background: #fef3c7; color: #92400e; }
+        .badge-dark { background: #1e293b; color: #ffffff; }
+        .badge-compact { background: #f3e8ff; color: #6366f1; }
+        .badge-spacious { background: #dcfce7; color: #059669; }
+
+        .direction-preview {
+            padding: 16px;
+            background: #f8fafc;
+        }
+
+        .preview-window {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .preview-titlebar {
+            background: #f1f5f9;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .preview-controls {
+            display: flex;
+            gap: 4px;
+        }
+
+        .preview-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #cbd5e1;
+        }
+
+        .preview-content {
+            padding: 16px;
+        }
+
+        .preview-section {
+            margin-bottom: 12px;
+        }
+
+        .preview-section-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #64748b;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .preview-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+        }
+
+        .preview-label {
+            font-size: 14px;
+            color: #1e293b;
+            flex: 0 0 120px;
+        }
+
+        .preview-input {
+            flex: 1;
+            height: 32px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 0 12px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .preview-select {
+            flex: 1;
+            height: 32px;
+            border: 1px solid #e2e8f0;
+            border-radius: 4px;
+            padding: 0 12px;
+            font-size: 14px;
+            font-family: inherit;
+            background: white;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L2 4l4 4 4-4 4-4z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px;
+        }
+
+        .preview-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .preview-checkbox input {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+        }
+
+        .preview-button {
+            padding: 8px 16px;
+            border-radius: 4px;
+            border: none;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preview-button-primary {
+            background: #2563eb;
+            color: white;
+        }
+
+        .preview-button-primary:hover {
+            background: #1e4eb3;
+        }
+
+        .preview-button-secondary {
+            background: white;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .preview-button-secondary:hover {
+            background: #f8fafc;
+        }
+
+        .direction-features {
+            padding: 16px;
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: start;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 13px;
+            color: #1e293b;
+        }
+
+        .feature-icon {
+            color: #10b981;
+            flex-shrink: 0;
+        }
+
+        .direction-footer {
+            padding: 12px 16px;
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        /* Direction-specific styles */
+        .direction-1 .preview-input { background: #f0fdf4; }
+        .direction-2 .preview-input { background: #eff6ff; }
+        .direction-3 .preview-input { background: #fffbeb; }
+
+        .direction-4 { background: #1e293b; }
+        .direction-4 .direction-header { background: #2d3748; border-bottom-color: #3e4d63; }
+        .direction-4 .direction-title { color: #ffffff; }
+        .direction-4 .direction-features { background: #252f3f; }
+        .direction-4 .feature-item { color: #e2e8f0; }
+        .direction-4 .direction-footer { background: #1e293b; border-top-color: #3e4d63; color: #94a3b8; }
+        .direction-4 .preview-window { background: #252f3f; border-color: #3e4d63; }
+        .direction-4 .preview-titlebar { background: #2d3748; }
+        .direction-4 .preview-dot { background: #4a5568; }
+        .direction-4 .preview-content { background: #252f3f; }
+        .direction-4 .preview-section-title { color: #94a3b8; }
+        .direction-4 .preview-label { color: #e2e8f0; }
+        .direction-4 .preview-input { background: #1e293b; color: #e2e8f0; border-color: #3e4d63; }
+        .direction-4 .preview-select { background: #1e293b; color: #e2e8f0; border-color: #3e4d63; }
+        .direction-4 .preview-button-primary { background: #3b82f6; color: white; }
+        .direction-4 .preview-button-secondary { background: #252f3f; color: #e2e8f0; border-color: #3e4d63; }
+
+        .direction-5 .preview-row { flex-direction: column; align-items: stretch; }
+        .direction-5 .preview-label { flex: none; margin-bottom: 4px; }
+        .direction-5 .preview-input { width: 100%; }
+
+        .direction-6 .preview-content { padding: 12px; }
+        .direction-6 .preview-section { margin-bottom: 8px; }
+        .direction-6 .preview-section-title { margin-bottom: 6px; }
+        .direction-6 .preview-input { padding: 0 8px; font-size: 13px; }
+        .direction-6 .preview-row { gap: 8px; padding: 4px 0; }
+        .direction-6 .preview-button { padding: 6px 12px; font-size: 13px; }
+
+        .tray-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 11px;
+            margin-bottom: 12px;
+        }
+
+        .tray-vi { background: #2563eb; color: white; }
+        .tray-en { background: #94a3b8; color: white; }
+        .tray-vi-dark { background: #3b82f6; color: white; }
+        .tray-en-dark { background: #4a5568; color: white; }
+
+        .mode-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #f1f5f9;
+            border-radius: 4px;
+            margin-bottom: 12px;
+        }
+
+        .mode-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .mode-vi .mode-indicator { background: #2563eb; }
+        .mode-en .mode-indicator { background: #94a3b8; }
+
+        .key-hint {
+            display: flex;
+            gap: 4px;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .key-badge {
+            background: #e2e8f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 16px;
+        }
+
+        .tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            font-size: 13px;
+            color: #64748b;
+            cursor: pointer;
+        }
+
+        .tab-active {
+            color: #2563eb;
+            border-bottom-color: #2563eb;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>VietIME Design Directions</h1>
+        <p>Explore 6 different visual approaches for the settings interface</p>
+    </div>
+
+    <div class="showcase">
+        <!-- Direction 1: Minimal Compact -->
+        <div class="direction direction-1">
+            <div class="direction-header">
+                <span class="direction-title">Minimal Compact</span>
+                <span class="direction-badge badge-minimal">Minimal</span>
+            </div>
+            <div class="direction-preview">
+                <div class="mode-status">
+                    <span class="mode-vi"><span class="mode-indicator"></span> VI Mode Active</span>
+                    <span class="key-hint"><span class="key-badge">Ctrl+Shift</span> to toggle</span>
+                </div>
+                <div class="preview-window">
+                    <div class="tabs">
+                        <button class="tab tab-active">Input Method</button>
+                        <button class="tab">Encoding</button>
+                        <button class="tab">Advanced</button>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <div class="preview-section-title">Input Method</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm1" checked> Telex
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm1"> VNI
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Macro</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Enable</label>
+                                <input type="checkbox" class="preview-checkbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direction-features">
+                <ul class="feature-list">
+                    <li class="feature-item"><span class="feature-icon">✓</span> Compact 480px width</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> 4px spacing unit</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Clear VI/EN indication</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Tabs navigation</li>
+                </ul>
+            </div>
+            <div class="direction-footer">Best for: Efficiency-focused users</div>
+        </div>
+
+        <!-- Direction 2: Standard Comfortable -->
+        <div class="direction direction-2">
+            <div class="direction-header">
+                <span class="direction-title">Standard Comfortable</span>
+                <span class="direction-badge badge-standard">Standard</span>
+            </div>
+            <div class="direction-preview">
+                <div class="mode-status">
+                    <span class="mode-en"><span class="mode-indicator"></span> EN Mode Active</span>
+                    <span class="key-hint"><span class="key-badge">Ctrl+Shift</span> to toggle</span>
+                </div>
+                <div class="preview-window">
+                    <div class="tabs">
+                        <button class="tab tab-active">Input Method</button>
+                        <button class="tab">Encoding</button>
+                        <button class="tab">Advanced</button>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <div class="preview-section-title">Input Method</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm2" checked> Telex
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm2"> VNI
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm2"> VIQR
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Options</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Auto-capitalize</label>
+                                <input type="checkbox">
+                            </div>
+                            <div class="preview-row">
+                                <label class="preview-label">Smart corrections</label>
+                                <input type="checkbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direction-features">
+                <ul class="feature-list">
+                    <li class="feature-item"><span class="feature-icon">✓</span> Comfortable 600px width</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> 8px spacing unit</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> More options visible</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Balanced approach</li>
+                </ul>
+            </div>
+            <div class="direction-footer">Best for: General users</div>
+        </div>
+
+        <!-- Direction 3: Detailed Comprehensive -->
+        <div class="direction direction-3">
+            <div class="direction-header">
+                <span class="direction-title">Detailed Comprehensive</span>
+                <span class="direction-badge badge-detailed">Detailed</span>
+            </div>
+            <div class="direction-preview">
+                <div class="mode-status">
+                    <span class="mode-vi"><span class="mode-indicator"></span> VI Mode Active</span>
+                    <span class="key-hint"><span class="key-badge">Ctrl+Shift</span> to toggle</span>
+                </div>
+                <div class="preview-window">
+                    <div class="preview-titlebar">
+                        <div class="preview-controls">
+                            <div class="preview-dot"></div>
+                            <div class="preview-dot"></div>
+                        </div>
+                        <span style="font-size:12px;color:#64748b;">VietIME Settings</span>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <div class="preview-section-title">Input Method</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Method</label>
+                                <select class="preview-select">
+                                    <option>Telex</option>
+                                    <option>VNI</option>
+                                    <option>VIQR</option>
+                                </select>
+                            </div>
+                            <div class="preview-row">
+                                <label class="preview-label">Buffer timeout</label>
+                                <select class="preview-select">
+                                    <option>2 seconds</option>
+                                    <option>3 seconds</option>
+                                    <option>5 seconds</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Output Method</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm3" checked> Clipboard (Ctrl+V)
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm3"> SendInput
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Hotkeys</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Toggle mode</label>
+                                <input type="text" class="preview-input" value="Ctrl+Shift" readonly>
+                            </div>
+                            <div class="preview-row">
+                                <label class="preview-label">Open settings</label>
+                                <input type="text" class="preview-input" value="Ctrl+Alt+S" readonly>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direction-features">
+                <ul class="feature-list">
+                    <li class="feature-item"><span class="feature-icon">✓</span> Maximum information</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Full control exposed</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Window chrome style</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Power user focused</li>
+                </ul>
+            </div>
+            <div class="direction-footer">Best for: Advanced users</div>
+        </div>
+
+        <!-- Direction 4: Dark Mode -->
+        <div class="direction direction-4">
+            <div class="direction-header">
+                <span class="direction-title">Dark Mode</span>
+                <span class="direction-badge badge-dark">Dark</span>
+            </div>
+            <div class="direction-preview">
+                <div class="mode-status">
+                    <span class="mode-vi-dark"><span class="mode-indicator"></span> VI Mode Active</span>
+                    <span class="key-hint"><span class="key-badge">Ctrl+Shift</span> to toggle</span>
+                </div>
+                <div class="preview-window">
+                    <div class="tabs">
+                        <button class="tab tab-active">Input Method</button>
+                        <button class="tab">Encoding</button>
+                        <button class="tab">Advanced</button>
+                    </div>
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <div class="preview-section-title">Input Method</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm4" checked> Telex
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm4"> VNI
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Options</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Enable macro</label>
+                                <input type="checkbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direction-features">
+                <ul class="feature-list">
+                    <li class="feature-item"><span class="feature-icon">✓</span> Dark theme option</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Reduced eye strain</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Modern aesthetic</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> OS-level dark sync</li>
+                </ul>
+            </div>
+            <div class="direction-footer">Best for: Dark mode lovers</div>
+        </div>
+
+        <!-- Direction 5: Vertical Stack -->
+        <div class="direction direction-5">
+            <div class="direction-header">
+                <span class="direction-title">Vertical Stack</span>
+                <span class="direction-badge badge-compact">Compact</span>
+            </div>
+            <div class="direction-preview">
+                <div class="mode-status">
+                    <span class="mode-vi"><span class="mode-indicator"></span> VI Mode Active</span>
+                    <span class="key-hint"><span class="key-badge">Ctrl+Shift</span> to toggle</span>
+                </div>
+                <div class="preview-window">
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <div class="preview-section-title">Input Method</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm5" checked> Telex
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm5"> VNI
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Mode Toggle</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Hotkey</label>
+                                <select class="preview-select">
+                                    <option>Ctrl+Shift</option>
+                                    <option>Ctrl+Alt+V</option>
+                                    <option>Custom...</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Startup</div>
+                            <div class="preview-row">
+                                <label class="preview-label">Auto-start</label>
+                                <input type="checkbox">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direction-features">
+                <ul class="feature-list">
+                    <li class="feature-item"><span class="feature-icon">✓</span> Full-width inputs</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Mobile-friendly</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Easy scanning</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Minimal horizontal space</li>
+                </ul>
+            </div>
+            <div class="direction-footer">Best for: Narrow screens</div>
+        </div>
+
+        <!-- Direction 6: Ultra Compact -->
+        <div class="direction direction-6">
+            <div class="direction-header">
+                <span class="direction-title">Ultra Compact</span>
+                <span class="direction-badge badge-compact">Ultra</span>
+            </div>
+            <div class="direction-preview">
+                <div class="mode-status">
+                    <span class="mode-vi"><span class="mode-indicator"></span> VI</span>
+                    <span class="key-hint"><span class="key-badge">⌘⇧</span> toggle</span>
+                </div>
+                <div class="preview-window">
+                    <div class="preview-content">
+                        <div class="preview-section">
+                            <div class="preview-section-title">Method</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm6" checked> Telex
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="radio" name="dm6"> VNI
+                                </div>
+                            </div>
+                        </div>
+                        <div class="preview-section">
+                            <div class="preview-section-title">Options</div>
+                            <div class="preview-row">
+                                <div class="preview-checkbox">
+                                    <input type="checkbox"> Auto-start
+                                </div>
+                                <div class="preview-checkbox">
+                                    <input type="checkbox"> Notify
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="direction-features">
+                <ul class="feature-list">
+                    <li class="feature-item"><span class="feature-icon">✓</span> 380px narrow width</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Minimal text</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Essential only</li>
+                    <li class="feature-item"><span class="feature-icon">✓</span> Fastest workflow</li>
+                </ul>
+            </div>
+            <div class="direction-footer">Best for: Quick settings access</div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactivity
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', (e) => {
+                const parent = e.target.closest('.direction');
+                parent.querySelectorAll('.tab').forEach(t => t.classList.remove('tab-active'));
+                e.target.classList.add('tab-active');
+            });
+        });
+
+        // Tray icon toggle demo
+        document.querySelectorAll('.direction').forEach(dir => {
+            const modeStatus = dir.querySelector('.mode-status span:first-child');
+            const indicator = dir.querySelector('.mode-indicator');
+
+            if (modeStatus) {
+                modeStatus.style.cursor = 'pointer';
+                modeStatus.addEventListener('click', () => {
+                    const isVi = modeStatus.classList.contains('mode-vi') || modeStatus.classList.contains('mode-vi-dark');
+                    if (isVi) {
+                        modeStatus.className = dir.classList.contains('direction-4') ? 'mode-en-dark' : 'mode-en';
+                        modeStatus.innerHTML = '<span class="mode-indicator"></span> EN Mode Active';
+                    } else {
+                        modeStatus.className = dir.classList.contains('direction-4') ? 'mode-vi-dark' : 'mode-vi';
+                        modeStatus.innerHTML = '<span class="mode-indicator"></span> VI Mode Active';
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
