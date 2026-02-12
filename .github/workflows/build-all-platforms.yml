@@ -85,13 +85,17 @@ jobs:
           hdiutil create -volname "VietIME" -srcfolder ./dmg-staging \
             -ov -format UDZO ./publish/VietIME-x64.dmg
 
+      - name: Prepare release artifacts
+        run: |
+          mkdir -p ./publish/release-mac
+          cp ./publish/VietIME-arm64.dmg ./publish/release-mac/
+          cp ./publish/VietIME-x64.dmg ./publish/release-mac/
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: VietIME-macOS
-          path: |
-            ./publish/VietIME-arm64.dmg
-            ./publish/VietIME-x64.dmg
+          path: ./publish/release-mac/
 
   # ═══════════════════════════════════════
   # Linux (Avalonia + evdev) — build trên Ubuntu
@@ -117,16 +121,16 @@ jobs:
       - name: Prepare binary
         run: |
           chmod +x ./publish/linux/VietIME
-          # Tạo tar.gz cho dễ tải
-          cd ./publish/linux && tar -czf ../VietIME-linux-x64.tar.gz VietIME
+          # Tạo tar.gz và copy binary ra cùng thư mục để artifact flat
+          mkdir -p ./publish/release-linux
+          cp ./publish/linux/VietIME ./publish/release-linux/VietIME
+          cd ./publish/linux && tar -czf ../release-linux/VietIME-linux-x64.tar.gz VietIME
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: VietIME-Linux
-          path: |
-            ./publish/linux/VietIME
-            ./publish/VietIME-linux-x64.tar.gz
+          path: ./publish/release-linux/
 
   # ═══════════════════════════════════════
   # Release — gom artifact từ 3 jobs, tạo GitHub Release
@@ -157,6 +161,9 @@ jobs:
           # Linux
           cp ./artifacts/VietIME-Linux/VietIME ./release/VietIME
           cp ./artifacts/VietIME-Linux/VietIME-linux-x64.tar.gz ./release/VietIME-linux-x64.tar.gz
+
+          echo "📦 Artifacts structure:"
+          find ./artifacts -type f
 
           echo "📦 Release files:"
           ls -lh ./release/

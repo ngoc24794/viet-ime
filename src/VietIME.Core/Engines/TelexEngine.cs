@@ -32,7 +32,7 @@ public class TelexEngine : IInputEngine
         var result = new ProcessKeyResult();
         char lowerKey = char.ToLower(key);
 
-        // Xử lý phím tắt '[' = ư, ']' = ơ (TRƯỚC khi kiểm tra IsLetter)
+        // Xử lý phím tắt '[' = ư, ']' = ơ (toggle: lần 2 trả lại bracket)
         if (key == '[' || key == ']')
         {
             var bracketResult = TryProcessBracket(key);
@@ -44,6 +44,10 @@ public class TelexEngine : IInputEngine
                 result.CurrentBuffer = GetBuffer();
                 return result;
             }
+            // Bracket không xử lý được → reset buffer, để qua
+            Reset();
+            result.Handled = false;
+            return result;
         }
 
         // Nếu là ký tự không phải chữ cái -> reset buffer
@@ -564,25 +568,34 @@ public class TelexEngine : IInputEngine
         
         return null;
     }
-    
     /// <summary>
-    /// Xử lý phím tắt '[' = ư, ']' = ơ
+    /// Xử lý phím tắt '[' = ư, ']' = ơ với toggle.
+    /// Lần 1: [ → ư, ] → ơ
+    /// Lần 2: ư + [ → [, ơ + ] → ]
     /// </summary>
     private (int backspaceCount, string output)? TryProcessBracket(char key)
     {
-        if (key == '[')
+        char targetVowel = key == '[' ? 'ư' : 'ơ';
+        char bracket = key;
+
+        // Toggle: nếu ký tự cuối trong buffer là ư (cho [) hoặc ơ (cho ]) → trả lại bracket
+        if (_buffer.Count > 0)
         {
-            _buffer.Add('ư');
-            return (0, "ư");
+            char lastLower = char.ToLower(VietnameseChar.GetVowelWithoutTone(_buffer[^1]));
+            if (lastLower == targetVowel)
+            {
+                // Xoá ư/ơ khỏi buffer, trả lại bracket gốc
+                _buffer.RemoveAt(_buffer.Count - 1);
+                // Xoá 1 ký tự (ư/ơ) trên màn hình, gửi bracket
+                return (1, bracket.ToString());
+            }
         }
-        if (key == ']')
-        {
-            _buffer.Add('ơ');
-            return (0, "ơ");
-        }
-        return null;
+
+        // Lần đầu: thêm ư/ơ vào buffer, output ư/ơ (chặn bracket gốc)
+        _buffer.Add(targetVowel);
+        return (0, targetVowel.ToString());
     }
-    
+
     private (int backspaceCount, string output)? TryProcessW(char key)
     {
         // Buffer rỗng -> không chuyển w thành ư, để nguyên w (có thể là từ tiếng Anh: windows, web...)

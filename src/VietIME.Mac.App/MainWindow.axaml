@@ -5,12 +5,82 @@
         mc:Ignorable="d"
         x:Class="VietIME.Mac.App.MainWindow"
         Title="VietIME"
-        Width="420" Height="500"
+        Width="420" Height="600"
         WindowStartupLocation="CenterScreen"
         CanResize="False"
         Background="{StaticResource BackgroundBrush}">
 
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
     <StackPanel Margin="16">
+
+        <!-- Permission Card (chỉ hiện khi thiếu quyền) -->
+        <Border x:Name="panelPermission" IsVisible="False"
+                Background="#2AF38BA8" CornerRadius="12" Padding="18" Margin="0,0,0,10"
+                BorderBrush="{StaticResource ErrorBrush}" BorderThickness="1">
+            <StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock Text="⚠" FontSize="18" Foreground="{StaticResource ErrorBrush}" />
+                    <TextBlock Text=" Cần cấp quyền để hoạt động" FontSize="14" FontWeight="SemiBold"
+                               Foreground="{StaticResource ErrorBrush}" VerticalAlignment="Center" />
+                </StackPanel>
+
+                <TextBlock Text="VietIME cần 2 quyền hệ thống để bắt phím và gửi ký tự tiếng Việt:" FontSize="12"
+                           Foreground="{StaticResource TextMutedBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                <!-- Input Monitoring -->
+                <Grid Margin="0,0,0,8">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="dotInputMonitoring" Width="8" Height="8" Margin="0,0,6,0" Fill="{StaticResource ErrorBrush}" />
+                            <TextBlock Text="Input Monitoring" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextBrush}" />
+                        </StackPanel>
+                        <TextBlock Text="Bắt phím nhấn toàn hệ thống" FontSize="11"
+                                   Foreground="{StaticResource TextDimBrush}" Margin="14,2,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Mở Cài đặt" Padding="10,6"
+                            Click="BtnOpenInputMonitoring_Click"
+                            Background="{StaticResource SurfaceLightBrush}"
+                            Foreground="{StaticResource TextBrush}" FontSize="11" />
+                </Grid>
+
+                <!-- Accessibility -->
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <StackPanel Orientation="Horizontal">
+                            <Ellipse x:Name="dotAccessibility" Width="8" Height="8" Margin="0,0,6,0" Fill="{StaticResource ErrorBrush}" />
+                            <TextBlock Text="Accessibility" FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextBrush}" />
+                        </StackPanel>
+                        <TextBlock Text="Gửi ký tự tiếng Việt thay thế" FontSize="11"
+                                   Foreground="{StaticResource TextDimBrush}" Margin="14,2,0,0" />
+                    </StackPanel>
+                    <Button Grid.Column="1" Content="Mở Cài đặt" Padding="10,6"
+                            Click="BtnOpenAccessibility_Click"
+                            Background="{StaticResource SurfaceLightBrush}"
+                            Foreground="{StaticResource TextBrush}" FontSize="11" />
+                </Grid>
+
+                <Border Height="1" Background="{StaticResource SurfaceLightBrush}" Margin="0,0,0,12" />
+
+                <TextBlock Text="Sau khi cấp quyền, nhấn nút bên dưới để kiểm tra lại và khởi động lại VietIME." FontSize="11"
+                           Foreground="{StaticResource TextDimBrush}" TextWrapping="Wrap" Margin="0,0,0,10" />
+
+                <Button x:Name="btnRecheckPermission" Content="✓ Kiểm tra lại quyền" Padding="14,8"
+                        Click="BtnRecheckPermission_Click"
+                        HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                        Background="{StaticResource PrimaryBrush}"
+                        Foreground="#1E1E2E" FontWeight="SemiBold" />
+            </StackPanel>
+        </Border>
 
         <!-- Status Card -->
         <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="18" Margin="0,0,0,10">
@@ -151,6 +221,102 @@
             </StackPanel>
         </Border>
 
+        <!-- Update Card -->
+        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="12" Padding="18" Margin="0,0,0,10">
+            <StackPanel>
+                <Grid Margin="0,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="PHIÊN BẢN" FontSize="10" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextDimBrush}" Margin="0,0,0,6" />
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock x:Name="txtCurrentVersion" Text="v1.0.7" FontSize="13"
+                                       Foreground="{StaticResource TextBrush}" />
+                        </StackPanel>
+                    </StackPanel>
+
+                    <Button x:Name="btnCheckUpdate" Grid.Column="1" Content="Kiểm tra cập nhật"
+                            Click="BtnCheckUpdate_Click" Padding="14,8" VerticalAlignment="Center"
+                            Background="{StaticResource SurfaceLightBrush}"
+                            Foreground="{StaticResource TextBrush}" />
+                </Grid>
+
+                <!-- Checking spinner -->
+                <StackPanel x:Name="panelChecking" IsVisible="False" Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="⟳" FontSize="13" Foreground="{StaticResource PrimaryBrush}" />
+                    <TextBlock Text=" Đang kiểm tra..." FontSize="12"
+                               Foreground="{StaticResource TextMutedBrush}" />
+                </StackPanel>
+
+                <!-- Up to date -->
+                <StackPanel x:Name="panelUpToDate" IsVisible="False" Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="✓" FontSize="13" Foreground="{StaticResource SuccessBrush}" FontWeight="Bold" />
+                    <TextBlock Text=" Bạn đang dùng phiên bản mới nhất" FontSize="12"
+                               Foreground="{StaticResource SuccessBrush}" />
+                </StackPanel>
+
+                <!-- Error -->
+                <TextBlock x:Name="txtUpdateError" IsVisible="False" FontSize="12"
+                           Foreground="{StaticResource ErrorBrush}" Margin="0,10,0,0" TextWrapping="Wrap" />
+
+                <!-- Update available banner -->
+                <Border x:Name="panelUpdateAvailable" IsVisible="False"
+                        Background="#1A89B4FA" CornerRadius="8" Padding="14" Margin="0,10,0,0">
+                    <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                            <TextBlock Text="🎉" FontSize="14" />
+                            <TextBlock Text=" Có phiên bản mới! " FontSize="13" FontWeight="SemiBold"
+                                       Foreground="{StaticResource PrimaryBrush}" />
+                            <TextBlock x:Name="txtNewVersion" FontSize="13" FontWeight="Bold"
+                                       Foreground="{StaticResource PrimaryBrush}" />
+                        </StackPanel>
+                        <TextBlock x:Name="txtReleaseNotes" FontSize="11" TextWrapping="Wrap"
+                                   Foreground="{StaticResource TextMutedBrush}" MaxLines="3"
+                                   Margin="0,0,0,8" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="btnInstallUpdate" Grid.Column="0" Content="⬇ Cập nhật ngay"
+                                    Click="BtnInstallUpdate_Click" Padding="14,8"
+                                    HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                                    Background="{StaticResource PrimaryBrush}"
+                                    Foreground="#1E1E2E" FontWeight="SemiBold" />
+                            <Button x:Name="btnViewRelease" Grid.Column="1" Content="Xem"
+                                    Click="BtnViewRelease_Click" Padding="14,8" Margin="6,0,0,0"
+                                    Background="{StaticResource SurfaceLightBrush}"
+                                    Foreground="{StaticResource TextBrush}" />
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- Download progress -->
+                <StackPanel x:Name="panelDownloading" IsVisible="False" Margin="0,10,0,0">
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,6">
+                        <TextBlock Text="⬇ Đang tải bản cập nhật..." FontSize="12"
+                                   Foreground="{StaticResource PrimaryBrush}" />
+                        <TextBlock x:Name="txtDownloadProgress" Text="" FontSize="12"
+                                   Foreground="{StaticResource TextMutedBrush}" Margin="6,0,0,0" />
+                    </StackPanel>
+                    <ProgressBar x:Name="progressDownload" Minimum="0" Maximum="100" Value="0"
+                                 Height="4" Foreground="{StaticResource PrimaryBrush}"
+                                 Background="{StaticResource SurfaceLightBrush}" />
+                </StackPanel>
+
+                <!-- Installing -->
+                <StackPanel x:Name="panelInstalling" IsVisible="False" Orientation="Horizontal" Margin="0,10,0,0">
+                    <TextBlock Text="⟳" FontSize="13" Foreground="{StaticResource PrimaryBrush}" />
+                    <TextBlock Text=" Đang cài đặt... App sẽ khởi động lại." FontSize="12"
+                               Foreground="{StaticResource PrimaryBrush}" />
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
         <!-- Footer -->
         <Grid Margin="0,2,0,0">
             <Grid.ColumnDefinitions>
@@ -159,11 +325,8 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
 
-            <TextBlock Grid.Column="0" FontSize="10" VerticalAlignment="Center"
-                       Foreground="{StaticResource TextDimBrush}">
-                <Run Text="v1.0.0" /> <Run Text=" — " /> <Run Text="Đỗ Nam" FontWeight="SemiBold" />
-                <Run Text=" — macOS" />
-            </TextBlock>
+            <TextBlock x:Name="txtFooterVersion" Grid.Column="0" FontSize="10" VerticalAlignment="Center"
+                       Foreground="{StaticResource TextDimBrush}" />
 
             <Button Grid.Column="1" Content="Ẩn" Click="BtnMinimize_Click"
                     Margin="0,0,6,0" Padding="14,8"
@@ -176,4 +339,5 @@
         </Grid>
 
     </StackPanel>
+    </ScrollViewer>
 </Window>

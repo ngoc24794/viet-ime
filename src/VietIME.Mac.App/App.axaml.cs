@@ -5,6 +5,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using Avalonia.Platform.Storage;
 using VietIME.Core.Engines;
+using VietIME.Core.Services;
 
 namespace VietIME.Mac.App;
 
@@ -57,6 +58,17 @@ public partial class App : Application
         _hook.DebugLog += msg => Console.WriteLine($"[VietIME] {msg}");
         _hook.Install();
         Console.WriteLine("[VietIME] App đã khởi động. Tray icon trên menu bar.");
+
+        // Nếu thiếu quyền → mở Settings window ngay để hiện hướng dẫn cấp quyền
+        if (!MacPermissionHelper.HasInputMonitoringPermission() ||
+            !MacPermissionHelper.HasPostEventPermission())
+        {
+            Console.WriteLine("[VietIME] Thiếu quyền - hiện hướng dẫn cấp quyền...");
+            ShowSettings();
+        }
+
+        // Auto-check update khi khởi động (background)
+        _ = CheckUpdateOnStartupAsync();
 
         base.OnFrameworkInitializationCompleted();
     }
@@ -199,6 +211,51 @@ public partial class App : Application
             _settingsWindow.Show();
             _settingsWindow.ShowError(error);
         });
+    }
+
+    /// <summary>
+    /// Kiểm tra update khi khởi động app.
+    /// Nếu có bản mới → tự động mở Settings window để hiện thông báo.
+    /// </summary>
+    private async Task CheckUpdateOnStartupAsync()
+    {
+        try
+        {
+            // Đợi 3 giây sau khi app khởi động để không ảnh hưởng startup
+            await Task.Delay(3000);
+
+            var updateService = new UpdateService();
+            var info = await updateService.CheckForUpdateAsync();
+
+            if (info.HasUpdate)
+            {
+                Console.WriteLine($"[VietIME] Có phiên bản mới: v{info.LatestVersion}");
+
+                await Avalonia.Threading.Dispatcher.UIThread.InvokeAsync(() =>
+                {
+                    // Mở Settings window và hiện update banner
+                    if (_settingsWindow == null)
+                    {
+                        _settingsWindow = new MainWindow(_hook);
+                    }
+
+                    if (!_settingsWindow.IsVisible)
+                    {
+                        _settingsWindow.RefreshState();
+                        _settingsWindow.Show();
+                    }
+                    _settingsWindow.Activate();
+                });
+            }
+            else
+            {
+                Console.WriteLine($"[VietIME] Đang dùng phiên bản mới nhất: v{UpdateService.AppVersion}");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[VietIME] Lỗi kiểm tra update: {ex.Message}");
+        }
     }
 }
 
