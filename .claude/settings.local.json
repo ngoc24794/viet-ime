@@ -7,5 +7,18 @@
       "WebSearch",
       "Bash(dotnet test:*)"
     ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "Before executing the bash command, check if it contains Windows paths (C:\\, D:\\, backslashes). If so, convert them to bash-compatible format:\n\nFor WSL: C:\\Users\\... → /mnt/c/Users/...\nFor Git Bash: C:\\Users\\... → /c/Users/...\n\nExample: cd C:\\Users\\ngocnv\\source\\repos\\viet-ime\\core → cd /mnt/c/Users/ngocnv/source/repos/viet-ime/core\n\nIf the command path is in $PWD or already in bash format, keep it as-is."
+          }
+        ]
+      }
+    ]
   }
 }
