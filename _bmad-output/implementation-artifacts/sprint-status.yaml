@@ -43,7 +43,7 @@ development_status:
   # Epic 1: Vietnamese Typing in All Applications
   epic-1: in-progress
   1-1-core-telex-input-processing: done
-  1-2-tone-mark-placement: backlog
+  1-2-tone-mark-placement: review
   1-3-special-character-processing: backlog
   1-4-backspace-buffer-management: backlog
   1-5-text-output-to-active-application: backlog
