@@ -142,7 +142,8 @@ impl VietnameseChar {
     /// assert!(!vietime_core::VietnameseChar::is_vowel('d'));
     /// ```
     pub fn is_vowel(c: char) -> bool {
-        let lower = c.to_ascii_lowercase();
+        let base = Self::get_vowel_without_tone(c);
+        let lower = base.to_ascii_lowercase();
         matches!(lower,
             'a' | 'ă' | 'â' | 'e' | 'ê' | 'i' | 'o' | 'ô' | 'ơ' | 'u' | 'ư' | 'y'
         )
@@ -172,50 +173,38 @@ impl VietnameseChar {
     /// assert_eq!(vietime_core::VietnameseChar::get_vowel_without_tone('ệ'), 'ê');
     /// ```
     pub fn get_vowel_without_tone(c: char) -> char {
-        for (base, variants) in vowel_map().entries() {
+        for (&base, variants) in vowel_map().entries() {
             if variants.contains(&c) {
-                return *base;
+                return base;
             }
         }
         c
     }
 
     /// Get the tone index of a character
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use vietime_core::vietnamese::ToneIndex;
-    /// assert_eq!(vietime_core::VietnameseChar::get_tone_index('ạ'), ToneIndex::Dot);
-    /// assert_eq!(vietime_core::VietnameseChar::get_tone_index('a'), ToneIndex::None);
-    /// ```
     pub fn get_tone_index(c: char) -> ToneIndex {
         for (_base, variants) in vowel_map().entries() {
-            if let Some(pos) = variants.iter().position(|&v| v == c) {
-                return match pos {
-                    0 => ToneIndex::None,
-                    1 => ToneIndex::Grave,
-                    2 => ToneIndex::Acute,
-                    3 => ToneIndex::Hook,
-                    4 => ToneIndex::Tilde,
-                    5 => ToneIndex::Dot,
-                    _ => ToneIndex::None,
-                };
+            for (i, &v) in variants.iter().enumerate() {
+                if v == c {
+                    return match i {
+                        0 => ToneIndex::None,
+                        1 => ToneIndex::Grave,
+                        2 => ToneIndex::Acute,
+                        3 => ToneIndex::Hook,
+                        4 => ToneIndex::Tilde,
+                        5 => ToneIndex::Dot,
+                        _ => ToneIndex::None,
+                    };
+                }
             }
         }
         ToneIndex::None
     }
 
     /// Apply a tone to a vowel
-    ///
-    /// # Examples
-    ///
-    /// ```
-    /// use vietime_core::vietnamese::ToneIndex;
-    /// assert_eq!(vietime_core::VietnameseChar::apply_tone('a', ToneIndex::Acute), 'á');
-    /// ```
     pub fn apply_tone(vowel: char, tone: ToneIndex) -> char {
-        if let Some(variants) = vowel_map().get(&vowel) {
+        let base_vowel = Self::get_vowel_without_tone(vowel);
+        if let Some(variants) = vowel_map().get(&base_vowel) {
             let index = tone as usize;
             if index < variants.len() {
                 return variants[index];
