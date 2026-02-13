@@ -4,7 +4,8 @@
       "Bash(dotnet build:*)",
       "Bash(dir:*)",
       "Bash(dotnet publish:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(dotnet test:*)"
     ]
   }
 }
