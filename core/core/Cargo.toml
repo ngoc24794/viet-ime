@@ -1,0 +1,20 @@
+[package]
+name = "vietime-core"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.75"
+authors = ["VietIME Contributors"]
+description = "Vietnamese IME Core Engine - Telex and VNI input processing"
+license = "MIT"
+repository = "https://github.com/vietime/vietime"
+
+[lib]
+name = "vietime_core"
+path = "src/lib.rs"
+crate-type = ["rlib", "staticlib", "cdylib"]
+
+[dependencies]
+# For efficient character lookups
+phf = { version = "0.11", features = ["macros"] }
+
+[dev-dependencies]

@@ -1,4 +1,7 @@
-# Build results
+# Rust target directory
+target/
+
+# .NET Build results
 [Bb]in/
 [Oo]bj/
 [Dd]ebug/

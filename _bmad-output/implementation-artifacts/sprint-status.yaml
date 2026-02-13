@@ -1,0 +1,73 @@
+# generated: 13-02-2026
+# project: viet-ime
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: {project-root}/_bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+
+generated: 13-02-2026
+project: viet-ime
+project_key: NOKEY
+tracking_system: file-system
+story_location: "{project-root}/_bmad-output/implementation-artifacts"
+
+development_status:
+  # Epic 1: Vietnamese Typing in All Applications
+  epic-1: in-progress
+  1-1-core-telex-input-processing: done
+  1-2-tone-mark-placement: backlog
+  1-3-special-character-processing: backlog
+  1-4-backspace-buffer-management: backlog
+  1-5-text-output-to-active-application: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Mode Switching & Visual Feedback
+  epic-2: backlog
+  2-1-system-tray-icon-with-mode-indicator: backlog
+  2-2-mode-toggle-via-keyboard-shortcut: backlog
+  2-3-context-menu-for-quick-access: backlog
+  2-4-mode-state-persistence: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Portable Application - No Installation
+  epic-3: backlog
+  3-1-cargo-workspace-structure-setup: backlog
+  3-2-application-launch-initialization: backlog
+  3-3-application-termination: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Configuration & Error Recovery
+  epic-4: backlog
+  4-1-toml-configuration-storage: backlog
+  4-2-configuration-loading-on-launch: backlog
+  4-3-graceful-error-recovery: backlog
+  4-4-github-bug-reporting-workflow: backlog
+  epic-4-retrospective: optional
